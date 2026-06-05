@@ -1,0 +1,9 @@
+.DS_Store
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+pre-vibe-reports/generated/
+pre-vibe-reports/live-v2/
+pre-vibe-plugin/.tmp/
