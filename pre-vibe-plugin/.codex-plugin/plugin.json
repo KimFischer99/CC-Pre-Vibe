@@ -1,6 +1,6 @@
 {
   "name": "pre-vibe",
-  "version": "0.4.0+codex.20260606195730",
+  "version": "0.4.0+codex.20260606200430",
   "description": "Codex workflow plugin that turns vague first-session requests into a project-specific intake flow, handbook spec, PROJECT_AGENTS guidance, and first prompt.",
   "author": {
     "name": "Kim Fischer",
@@ -32,8 +32,7 @@
     "defaultPrompt": [
       "/prompts:pre-vibe \"Describe the rough request here\"",
       "Turn my rough idea into a clear Codex-ready task.",
-      "Prepare this new session with project-aware context.",
-      "Clarify this request before Codex starts work."
+      "Prepare this new session with project-aware context."
     ],
     "brandColor": "#2563EB"
   }

@@ -7,3 +7,6 @@ __pycache__/
 pre-vibe-reports/generated/
 pre-vibe-reports/live-v2/
 pre-vibe-plugin/.tmp/
+test/pre-vibe-simulation/child-process.log
+test/pre-vibe-simulation/simulation-result.json
+test/pre-vibe-simulation/generated/.pre-vibe/
