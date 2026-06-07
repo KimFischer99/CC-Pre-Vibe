@@ -1,6 +1,6 @@
 ---
-name: "pre-vibe-workflow"
-description: "Internal orchestration guidance for the Pre-Vibe Claude Code plugin when it is enabled. Use only to coordinate Pre-Vibe MCP tools, native question UI, starting-document rules, AGENTS.md compatibility, and first-prompt handoff inside the plugin workflow."
+name: "pre-vibe"
+description: "Prepare project starting context before implementation. Use when the user runs /pre-vibe, asks to set up a new project session, needs a project handbook, or wants to turn a rough request into structured starting documents. Coordinates MCP tools for safe project scanning, blocking questions, and FIRST_PROMPT.md handoff."
 ---
 
 # Pre-Vibe Workflow

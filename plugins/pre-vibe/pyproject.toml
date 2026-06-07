@@ -1,0 +1,35 @@
+[project]
+name = "pre-vibe"
+version = "0.1.1"
+description = "Claude Code plugin that turns rough first-session requests into project-specific starting context"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Kim Fischer", email = "opensource@users.noreply.github.com" }]
+keywords = ["claude-code", "plugin", "context", "prompt", "workflow"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+]
+
+[project.urls]
+Homepage = "https://github.com/KimFischer99/Pre-Vibe"
+Repository = "https://github.com/KimFischer99/Pre-Vibe"
+Changelog = "https://github.com/KimFischer99/Pre-Vibe/blob/main/CHANGELOG.md"
+
+[project.scripts]
+pre-vibe = "pre_vibe:main"
+
+[tool.mypy]
+python_version = "3.11"
+strict = false
+ignore_missing_imports = true
+warn_return_any = true
+warn_unused_configs = true
+
+[tool.ruff]
+target-version = "py311"
+line-length = 120

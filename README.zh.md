@@ -81,7 +81,7 @@ Pre-Vibe 的会话启动流程：
 
 - `.claude-plugin/plugin.json`：插件 manifest
 - `.mcp.json`：内置 stdio MCP server 注册
-- `skills/pre-vibe-workflow/SKILL.md`：插件内工作流指引
+- `skills/pre-vibe/SKILL.md`：插件内工作流指引
 - `scripts/mcp_server.py`：MCP 工具入口
 - `scripts/pv_*.py`：路由、扫描、提问、设置、文档和压缩输出模块
 
@@ -104,7 +104,7 @@ pre-vibe/
 │   ├── .mcp.json
 │   ├── README.md
 │   ├── scripts/
-│   └── skills/pre-vibe-workflow/SKILL.md
+│   └── skills/pre-vibe/SKILL.md
 ├── tests/
 ├── CHANGELOG.md
 ├── CONTRIBUTING.md

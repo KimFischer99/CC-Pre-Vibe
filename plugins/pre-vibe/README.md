@@ -8,7 +8,7 @@ Pre-Vibe is backed by a local stdio MCP server and plugin-scoped workflow guidan
 
 - `.claude-plugin/plugin.json`: Claude Code plugin manifest.
 - `.mcp.json`: bundled MCP server registration.
-- `skills/pre-vibe-workflow/SKILL.md`: workflow guidance for Claude Code orchestration.
+- `skills/pre-vibe/SKILL.md`: workflow guidance for Claude Code orchestration.
 - `scripts/pre_vibe.py`: compatibility facade and CLI.
 - `scripts/mcp_server.py`: stdio MCP server.
 - `scripts/pv_*.py`: focused workflow modules.

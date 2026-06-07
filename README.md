@@ -81,7 +81,7 @@ The plugin package lives in `plugins/pre-vibe/` and includes:
 
 - `.claude-plugin/plugin.json`: plugin manifest
 - `.mcp.json`: bundled stdio MCP server registration
-- `skills/pre-vibe-workflow/SKILL.md`: plugin-scoped workflow guidance
+- `skills/pre-vibe/SKILL.md`: plugin-scoped workflow guidance
 - `scripts/mcp_server.py`: MCP tool surface
 - `scripts/pv_*.py`: focused workflow modules for routing, scanning, questions, settings, artifacts, and compact output
 
@@ -104,7 +104,7 @@ pre-vibe/
 │   ├── .mcp.json
 │   ├── README.md
 │   ├── scripts/
-│   └── skills/pre-vibe-workflow/SKILL.md
+│   └── skills/pre-vibe/SKILL.md
 ├── tests/
 ├── CHANGELOG.md
 ├── CONTRIBUTING.md
