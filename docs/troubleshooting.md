@@ -2,10 +2,10 @@
 
 ## Plugin Does Not Appear
 
-1. Restart the Codex thread after installing.
-2. Confirm the marketplace was added.
-3. Reinstall the plugin after version changes.
-4. Check that `plugins/pre-vibe/.codex-plugin/plugin.json` is present.
+1. Restart the Claude Code session after installing.
+2. Run `/reload-plugins` to pick up changes.
+3. Confirm the plugin is enabled with `/plugin list`.
+4. Check that `plugins/pre-vibe/.claude-plugin/plugin.json` is present.
 
 ## MCP Tools Do Not Load
 
@@ -19,9 +19,9 @@ If `python3` is missing, install Python 3 or use WSL on Windows.
 
 ## Native Question UI Does Not Open
 
-Pre-Vibe should pause instead of printing backend fields. Restart the thread, enable the plugin again, and retry. If the UI still fails, reduce the task to a smaller first prompt or run without Pre-Vibe for that session.
+Pre-Vibe should pause instead of printing backend fields. Restart the session, enable the plugin again, and retry. If the UI still fails, reduce the task to a smaller first prompt or run without Pre-Vibe for that session.
 
-## Documents Are Generated But Codex Stops
+## Documents Are Generated But Claude Code Stops
 
 This is a workflow failure. The expected next step is:
 
@@ -34,8 +34,7 @@ The MCP write result includes `handoff.required_next_actions` to make this seque
 ## Validation Commands
 
 ```bash
-python3 ~/.codex/skills/.system/plugin-creator/scripts/validate_plugin.py plugins/pre-vibe
+claude plugin validate plugins/pre-vibe
 python3 -m py_compile plugins/pre-vibe/scripts/*.py
 python3 -m unittest discover -s tests
-codex review --uncommitted
 ```

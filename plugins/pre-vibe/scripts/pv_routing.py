@@ -169,11 +169,11 @@ def project_language_for(task: str, language: str) -> list[ProjectLanguageItem]:
                 "Confirm billing or workspace ownership later if the product needs it.",
             )
         )
-    if any(term in lower for term in ("plugin", "插件", "codex")):
+    if any(term in lower for term in ("plugin", "插件", "claude")):
         items.append(
             ProjectLanguageItem(
-                "Codex plugin" if language != "zh" else "Codex 插件",
-                "A Codex extension package that can bundle MCP tools and workflow guidance.",
+                "Claude Code plugin" if language != "zh" else "Claude Code 插件",
+                "A Claude Code extension package that can bundle MCP tools and workflow guidance.",
                 ["skill", "slash command"] if language != "zh" else ["skill", "slash 命令"],
                 "Use this term when describing Pre-Vibe-style integrations.",
             )
@@ -182,7 +182,7 @@ def project_language_for(task: str, language: str) -> list[ProjectLanguageItem]:
         items.append(
             ProjectLanguageItem(
                 "Project" if language != "zh" else "项目",
-                "The active workspace and deliverable being prepared for Codex execution.",
+                "The active workspace and deliverable being prepared for Claude Code execution.",
                 ["task dump"] if language != "zh" else ["临时任务堆"],
                 "Keep this term tied to the current workspace, not the Pre-Vibe implementation.",
             )
@@ -252,11 +252,11 @@ def component_suggestions_for(
     if scenario in {"research", "mixed"}:
         suggestions.append("Use live web/source lookup for current facts and cite primary sources in the handbook.")
 
-    if "openai" in lower or "codex" in lower or "plugin" in lower:
-        if any("openai-docs" in name for name in installed):
-            suggestions.append("Use the installed openai-docs skill for official OpenAI/Codex behavior before making product claims.")
+    if "anthropic" in lower or "claude" in lower or "plugin" in lower:
+        if any("anthropic-docs" in name for name in installed):
+            suggestions.append("Use the installed anthropic-docs skill for official Anthropic/Claude Code behavior before making product claims.")
         else:
-            missing.append("Search official OpenAI/Codex docs and consider installing an OpenAI-docs helper before relying on product behavior.")
+            missing.append("Search official Anthropic/Claude Code docs and consider installing an Anthropic-docs helper before relying on product behavior.")
 
     if any(term in lower for term in ("ui", "frontend", "界面", "前端", "dashboard", "landing", "web app")):
         if any("ui-ux" in name or "ui-styling" in name for name in installed):
@@ -393,7 +393,7 @@ def context_actions_for(
             ContextAction(
                 "codex_component_index",
                 "environment",
-                "Inspect AGENTS guidance and installed Codex components before asking questions.",
+                "Inspect AGENTS guidance and installed Claude Code components before asking questions.",
             )
         )
     if scenario in {"research", "mixed"} and profile.allow_fetch:
@@ -422,12 +422,12 @@ def artifact_rules_for(language: str) -> list[str]:
             "三份 Markdown 必须围绕用户任务和项目证据定制写作。",
             "最终产物不得出现 pre-vibe、插件实现、MCP server 或 workflow 内部表述，除非用户任务本身就是开发该工具。",
             "PRE_VIBE_SPEC.md 面向初级用户，是项目 handbook；必须包含 Project Language 和 Evidence。",
-            "AGENTS.md 或 PROJECT_AGENTS.md 面向 Codex；只保留执行规则、约束、文件指针、验收标准和必要操作边界。",
+            "AGENTS.md 或 PROJECT_AGENTS.md 面向 Claude Code；只保留执行规则、约束、文件指针、验收标准和必要操作边界。",
             "AGENTS.md / PROJECT_AGENTS.md 必须参考全局 AGENTS.md；不得加入与全局指令冲突或削弱全局指令的规则。",
             "FIRST_PROMPT.md 必须是 execution contract，包含 Completion Contract、停止询问条件和验证要求。",
             "architect 档可额外生成 PROJECT_INDEX.md；FIRST_PROMPT.md 可以引用 PROJECT_INDEX.md。",
             "PRE_VIBE_SPEC.md、AGENTS.md/PROJECT_AGENTS.md、PROJECT_INDEX.md 必须彼此独立；任一文件不得出现另一文件的文件名或路径。",
-            "问题必须通过 Codex 原生提问/审批 UI 展示；不得把阻塞问题直接写在普通聊天消息中。",
+            "问题必须通过 Claude Code 原生提问/审批 UI 展示；不得把阻塞问题直接写在普通聊天消息中。",
             "每个阻塞问题必须包含推荐答案；能从项目文件推断的信息不得重复询问用户。",
             "信息不足时先询问或补上下文，不得用模板语言填空。",
         ]
@@ -440,7 +440,7 @@ def artifact_rules_for(language: str) -> list[str]:
         "FIRST_PROMPT.md must be an execution contract with Completion Contract, stop/ask conditions, and verification requirements.",
         "Architect effort may also produce PROJECT_INDEX.md; FIRST_PROMPT.md may reference PROJECT_INDEX.md.",
         "PRE_VIBE_SPEC.md, AGENTS.md/PROJECT_AGENTS.md, and PROJECT_INDEX.md must be standalone; none may mention another filename or path.",
-        "Blocking questions must be shown through Codex's native question/approval UI, not as ordinary chat text.",
+        "Blocking questions must be shown through Claude Code's native question/approval UI, not as ordinary chat text.",
         "Every blocking question must include a recommended answer; do not ask for facts already inferable from project files.",
         "When context is missing, ask or acquire context; never fill gaps with template language.",
     ]
@@ -539,7 +539,7 @@ def route_intake(
         evidence.append(
             EvidenceRef(
                 "codex_component_index",
-                codex_environment.codex_home or "Codex home",
+                codex_environment.codex_home or "Claude Code home",
                 f"Indexed {len(codex_environment.installed_plugins)} plugins and {len(codex_environment.installed_skills)} standalone skills.",
                 "high",
                 ["AGENTS.md", "FIRST_PROMPT.md"],

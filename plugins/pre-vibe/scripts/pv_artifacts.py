@@ -1,4 +1,4 @@
-"""Artifact validation and writing for Codex-authored starting documents."""
+"""Artifact validation and writing for Claude Code-authored starting documents."""
 
 from __future__ import annotations
 
@@ -91,7 +91,7 @@ def handoff_contract(written: dict[str, str]) -> dict[str, Any]:
     return {
         "workflow_state": AWAITING_APPROVAL,
         "handoff_file": written["prompt"],
-        "approval_request": "Please review the generated starting documents. Approve the FIRST_PROMPT.md handoff so Codex can continue from it.",
+        "approval_request": "Please review the generated starting documents. Approve the FIRST_PROMPT.md handoff so Claude Code can continue from it.",
         "required_next_actions": HANDOFF_REQUIRED_NEXT_ACTIONS,
         "document_generation_is_complete": True,
         "pre_vibe_run_is_complete": False,

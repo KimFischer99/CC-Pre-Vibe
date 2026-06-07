@@ -1,0 +1,21 @@
+{
+  "name": "pre-vibe",
+  "owner": {
+    "name": "Kim Fischer",
+    "email": "opensource@users.noreply.github.com"
+  },
+  "description": "Pre-Vibe plugin for Claude Code - turn rough starts into clean project starting context",
+  "plugins": [
+    {
+      "name": "pre-vibe",
+      "source": "./plugins/pre-vibe",
+      "description": "Turn rough first-session requests into project-specific starting context, handbook guidance, and a compact first prompt.",
+      "version": "0.1.1",
+      "author": {
+        "name": "Kim Fischer"
+      },
+      "category": "productivity",
+      "tags": ["context", "prompt", "spec", "workflow", "onboarding"]
+    }
+  ]
+}

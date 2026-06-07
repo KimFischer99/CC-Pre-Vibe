@@ -67,7 +67,7 @@ class PreVibeWorkflowTests(unittest.TestCase):
                     allow_project_index=False,
                 )
 
-    def test_can_disable_codex_environment_inspection(self) -> None:
+    def test_can_disable_claude_code_environment_inspection(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             update_pre_vibe_settings(Path(tmp), inspect_codex_environment=False)
             payload = prepare_project_start(

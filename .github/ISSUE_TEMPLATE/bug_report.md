@@ -15,7 +15,7 @@ assignees: ""
 ## Environment
 
 - OS:
-- Codex version:
+- Claude Code version:
 - Pre-Vibe version:
 
 ## Logs or screenshots

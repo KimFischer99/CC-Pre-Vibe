@@ -1,4 +1,4 @@
-"""Codex environment inspection helpers."""
+"""Claude Code environment inspection helpers."""
 
 from __future__ import annotations
 
@@ -17,50 +17,23 @@ except ModuleNotFoundError:  # pragma: no cover - Python < 3.11 fallback.
 
 
 def collect_configured_plugins(config_path: Path) -> list[str]:
+    """Read enabled plugins from Claude Code settings.json."""
     if not config_path.exists():
         return []
-    if tomllib is None:
-        return collect_configured_plugins_legacy(config_path)
     try:
-        payload = tomllib.loads(config_path.read_text(encoding="utf-8"))
-    except (OSError, tomllib.TOMLDecodeError):
+        payload = json.loads(config_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
         return []
-    plugins = payload.get("plugins", {})
-    if not isinstance(plugins, dict):
+    enabled = payload.get("enabledPlugins", {})
+    if not isinstance(enabled, dict):
         return []
     configured: list[str] = []
-    for name, value in plugins.items():
+    for name, value in enabled.items():
         if not isinstance(name, str):
             continue
-        enabled = True
-        if isinstance(value, dict):
-            enabled = bool(value.get("enabled", True))
-        if enabled:
+        if value is True:
             configured.append(name)
     return sorted(configured)
-
-
-def collect_configured_plugins_legacy(config_path: Path) -> list[str]:
-    try:
-        lines = config_path.read_text(encoding="utf-8").splitlines()
-    except OSError:
-        return []
-    current: str | None = None
-    enabled: dict[str, bool] = {}
-    header_re = re.compile(r'^\[plugins\."([^"]+)"\]\s*$')
-    for raw in lines:
-        line = raw.strip()
-        header = header_re.match(line)
-        if header:
-            current = header.group(1)
-            enabled.setdefault(current, True)
-            continue
-        if line.startswith("["):
-            current = None
-            continue
-        if current and re.match(r"^enabled\s*=\s*false\b", line, re.IGNORECASE):
-            enabled[current] = False
-    return sorted(name for name, is_enabled in enabled.items() if is_enabled)
 
 
 def collect_plugin_names(cache_root: Path, marketplace_path: Path) -> tuple[list[str], list[str], list[str]]:
@@ -86,13 +59,12 @@ def collect_plugin_names(cache_root: Path, marketplace_path: Path) -> tuple[list
 
 
 def inspect_codex_environment() -> CodexEnvironment:
-    codex_home = os.environ.get("CODEX_HOME")
-    default_codex_home = Path.home() / ".codex"
+    claude_home = Path.home() / ".claude"
     global_agents = find_global_agents()
-    cache_root = default_codex_home / "plugins" / "cache"
-    marketplace = Path.home() / ".agents" / "plugins" / "marketplace.json"
+    cache_root = claude_home / "plugins" / "cache"
+    marketplace = claude_home / "plugins" / "marketplace.json"
     plugin_cache, cached_plugins, marketplace_plugins = collect_plugin_names(cache_root, marketplace)
-    configured_plugins = collect_configured_plugins(default_codex_home / "config.toml")
+    configured_plugins = collect_configured_plugins(claude_home / "settings.json")
     installed_plugins = configured_plugins or cached_plugins
     marketplace_has_pre_vibe = False
     if marketplace.exists():
@@ -105,8 +77,7 @@ def inspect_codex_environment() -> CodexEnvironment:
         except json.JSONDecodeError:
             marketplace_has_pre_vibe = False
     skill_roots = [
-        default_codex_home / "skills",
-        Path.home() / ".agents" / "skills",
+        claude_home / "skills",
     ]
     notes = []
     if not global_agents:
@@ -114,13 +85,13 @@ def inspect_codex_environment() -> CodexEnvironment:
     if not marketplace_has_pre_vibe:
         notes.append("pre-vibe is not listed in the default personal marketplace.")
     return CodexEnvironment(
-        codex_home=codex_home or str(default_codex_home),
+        codex_home=str(claude_home),
         global_agents_path=str(global_agents) if global_agents else None,
         installed_plugin_cache=plugin_cache,
         installed_plugins=installed_plugins,
         marketplace_plugins=marketplace_plugins,
         installed_skills=collect_skill_names(skill_roots),
-        local_plugins_path=str(Path.home() / "plugins"),
+        local_plugins_path=str(claude_home / "plugins"),
         marketplace_path=str(marketplace) if marketplace.exists() else None,
         marketplace_has_pre_vibe=marketplace_has_pre_vibe,
         notes=notes,

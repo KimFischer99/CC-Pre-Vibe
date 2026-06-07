@@ -65,13 +65,13 @@ def native_question_payload(decision: IntakeDecision) -> dict[str, Any] | None:
         for question in decision.blocking_questions
     ]
     return {
-        "preferred_surface": "codex_native_question_ui",
+        "preferred_surface": "claude_code_native_question_ui",
         "codex_request_user_input": {
             "questions": questions,
         },
         "mcp_elicitation": {
             "method": "elicitation/create",
-            "message": "Please answer the key questions so Codex can build the project starting context.",
+            "message": "Please answer the key questions so Claude Code can build the project starting context.",
             "requestedSchema": {
                 "type": "object",
                 "properties": {
@@ -85,14 +85,14 @@ def native_question_payload(decision: IntakeDecision) -> dict[str, Any] | None:
                 "required": [question.id for question in decision.blocking_questions],
             },
         },
-        "fallback_policy": "If this Codex surface cannot open native question UI or MCP elicitation, pause and report that native question UI is unavailable instead of printing backend fields.",
+        "fallback_policy": "If this Claude Code surface cannot open native question UI or MCP elicitation, pause and report that native question UI is unavailable instead of printing backend fields.",
     }
 
 
 def visible_status_for_state(state: str, language: str = "auto") -> str:
     zh = language in {"zh", "bilingual", "auto"}
     if state == NEEDS_CONTEXT:
-        return "正在读取项目结构和 Codex 环境。" if zh else "Reading the project and Codex environment."
+        return "正在读取项目结构和 Claude Code 环境。" if zh else "Reading the project and Claude Code environment."
     if state == NEEDS_USER_INPUT:
         return "正在打开关键问题确认窗口。" if zh else "Opening the key-question dialog."
     if state == READY_TO_COMPILE:

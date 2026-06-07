@@ -64,7 +64,7 @@ def tool_schema() -> list[dict[str, Any]]:
     return [
         {
             "name": "prepare_project_start",
-            "description": "First step for Pre-Vibe. Read safe project/Codex context, choose effort level, and return the mandatory workflow contract. If structuredContent.question_request is present, call open_question_dialog before writing documents. Do not print structured fields in chat.",
+            "description": "First step for Pre-Vibe. Read safe project/Claude Code context, choose effort level, and return the mandatory workflow contract. If structuredContent.question_request is present, call open_question_dialog before writing documents. Do not print structured fields in chat.",
             "inputSchema": {
                 "type": "object",
                 "properties": {
@@ -134,11 +134,11 @@ def tool_schema() -> list[dict[str, Any]]:
         },
         {
             "name": "open_question_dialog",
-            "description": "Open Codex native MCP elicitation for blocking questions returned by prepare_project_start. Use this instead of printing questions in chat.",
+            "description": "Open Claude Code native MCP elicitation for blocking questions returned by prepare_project_start. Use this instead of printing questions in chat.",
             "inputSchema": {
                 "type": "object",
                 "properties": {
-                    "message": {"type": "string", "default": "Please answer the key questions so Codex can continue."},
+                    "message": {"type": "string", "default": "Please answer the key questions so Claude Code can continue."},
                     "requestedSchema": {"type": "object"},
                     "questions": {
                         "type": "array",
@@ -170,7 +170,7 @@ def tool_schema() -> list[dict[str, Any]]:
         },
         {
             "name": "inspect_codex_environment",
-            "description": "Inspect Codex AGENTS, installed standalone skills, plugin cache, enabled plugins, and personal marketplace state.",
+            "description": "Inspect Claude Code AGENTS, installed standalone skills, plugin cache, enabled plugins, and personal marketplace state.",
             "inputSchema": {
                 "type": "object",
                 "properties": {
@@ -180,7 +180,7 @@ def tool_schema() -> list[dict[str, Any]]:
         },
         {
             "name": "write_project_starting_documents",
-            "description": "Pre-Vibe document write step. Write only Codex-authored, task-specific project starting documents after required context and user answers are available. This is not the final workflow step: after the tool returns, request user approval for FIRST_PROMPT.md and inject it after approval. Does not generate prose.",
+            "description": "Pre-Vibe document write step. Write only Claude Code-authored, task-specific project starting documents after required context and user answers are available. This is not the final workflow step: after the tool returns, request user approval for FIRST_PROMPT.md and inject it after approval. Does not generate prose.",
             "inputSchema": {
                 "type": "object",
                 "properties": {
@@ -241,7 +241,7 @@ def request_client_elicitation(arguments: dict[str, Any]) -> dict[str, Any]:
         "id": request_id,
         "method": "elicitation/create",
         "params": {
-            "message": arguments.get("message") or "Please answer the key questions so Codex can continue.",
+            "message": arguments.get("message") or "Please answer the key questions so Claude Code can continue.",
             "requestedSchema": requested_schema,
         },
     }
@@ -253,27 +253,27 @@ def request_client_elicitation(arguments: dict[str, Any]) -> dict[str, Any]:
         if not readable:
             return {
                 "available": False,
-                "reason": "Timed out waiting for Codex native question UI.",
+                "reason": "Timed out waiting for Claude Code native question UI.",
             }
         line = sys.stdin.readline()
         if not line:
             return {
                 "available": False,
-                "reason": "Codex closed the MCP stream before returning a question UI response.",
+                "reason": "Claude Code closed the MCP stream before returning a question UI response.",
             }
         try:
             response = json.loads(line)
         except json.JSONDecodeError:
             return {
                 "available": False,
-                "reason": "Codex returned malformed JSON while opening the native question UI.",
+                "reason": "Claude Code returned malformed JSON while opening the native question UI.",
             }
         if response.get("id") != request_id:
             continue
         if "error" in response:
             return {
                 "available": False,
-                "reason": "Codex rejected the native question UI request.",
+                "reason": "Claude Code rejected the native question UI request.",
                 "error": response["error"],
             }
         return {
@@ -316,7 +316,7 @@ def call_tool(name: str, arguments: dict[str, Any]) -> dict[str, Any]:
         public_text = (
             "关键问题已确认，正在构建项目初始文档。"
             if payload.get("available")
-            else "当前 Codex 界面未能打开原生提问窗口。"
+            else "当前 Claude Code 界面未能打开原生提问窗口。"
         )
         return text_result(payload, public_text)
     if name == "scan_project_safe":
@@ -334,11 +334,11 @@ def call_tool(name: str, arguments: dict[str, Any]) -> dict[str, Any]:
             return text_result(
                 {
                     "inspection_enabled": False,
-                    "notes": ["Codex environment inspection is disabled for this project."],
+                    "notes": ["Claude Code environment inspection is disabled for this project."],
                 },
-                "此项目已关闭 Codex 环境读取。",
+                "此项目已关闭 Claude Code 环境读取。",
             )
-        return text_result(inspect_codex_environment(), "正在读取 Codex 环境。")
+        return text_result(inspect_codex_environment(), "正在读取 Claude Code 环境。")
     if name == "write_project_starting_documents":
         payload = write_artifacts(
             Path(arguments.get("output_dir", ".")),

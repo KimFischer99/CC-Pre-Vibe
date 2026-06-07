@@ -1,11 +1,11 @@
 ---
 name: "pre-vibe-workflow"
-description: "Internal orchestration guidance for the Pre-Vibe Codex plugin when it is enabled. Use only to coordinate Pre-Vibe MCP tools, native question UI, starting-document rules, AGENTS.md compatibility, and first-prompt handoff inside the plugin workflow."
+description: "Internal orchestration guidance for the Pre-Vibe Claude Code plugin when it is enabled. Use only to coordinate Pre-Vibe MCP tools, native question UI, starting-document rules, AGENTS.md compatibility, and first-prompt handoff inside the plugin workflow."
 ---
 
 # Pre-Vibe Workflow
 
-This skill is bundled with the Pre-Vibe plugin as workflow guidance for Codex. Users enable Pre-Vibe from the Codex plugin picker and describe their rough task naturally.
+This skill is bundled with the Pre-Vibe plugin as workflow guidance for Claude Code. Users enable Pre-Vibe from the Claude Code plugin picker and describe their rough task naturally.
 
 ## Operating Rules
 
@@ -30,7 +30,7 @@ The plugin startup workflow must follow this order:
 4. request user approval for the `FIRST_PROMPT.md` handoff
 5. read and inject `FIRST_PROMPT.md` as the next execution contract after approval
 
-If Codex cannot open native question UI, pause and report that the UI is unavailable. If the user rejects the handoff, stop and ask what should change. The Pre-Vibe run is complete only when the handoff is approved and `FIRST_PROMPT.md` has been used, or when the user explicitly cancels.
+If Claude Code cannot open native question UI, pause and report that the UI is unavailable. If the user rejects the handoff, stop and ask what should change. The Pre-Vibe run is complete only when the handoff is approved and `FIRST_PROMPT.md` has been used, or when the user explicitly cancels.
 
 ## Document Contract
 
@@ -38,7 +38,7 @@ If Codex cannot open native question UI, pause and report that the UI is unavail
 - `AGENTS.md`: created only when the project has no root `AGENTS.md`.
 - `PROJECT_AGENTS.md`: proposal when a root `AGENTS.md` already exists.
 - `FIRST_PROMPT.md`: rewritten fully on each Pre-Vibe handoff as the execution contract.
-- `PROJECT_INDEX.md`: architect effort only; indexes project intent, resources, tools, files, environment, and purpose for Codex.
+- `PROJECT_INDEX.md`: architect effort only; indexes project intent, resources, tools, files, environment, and purpose for Claude Code.
 
 ## Intensity
 

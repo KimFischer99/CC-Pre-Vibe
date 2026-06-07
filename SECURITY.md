@@ -1,6 +1,6 @@
 # Security Policy
 
-Pre-Vibe reads project metadata and allowlisted project files to prepare Codex starting context. It is designed to skip secret-like files by default, including environment files, private keys, token stores, databases, dumps, and production logs.
+Pre-Vibe reads project metadata and allowlisted project files to prepare Claude Code starting context. It is designed to skip secret-like files by default, including environment files, private keys, token stores, databases, dumps, and production logs.
 
 ## Reporting
 

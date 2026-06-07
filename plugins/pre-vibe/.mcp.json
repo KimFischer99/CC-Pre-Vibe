@@ -3,8 +3,9 @@
     "pre-vibe": {
       "command": "python3",
       "args": [
-        "./scripts/mcp_server.py"
-      ]
+        "${CLAUDE_PLUGIN_ROOT}/scripts/mcp_server.py"
+      ],
+      "cwd": "${CLAUDE_PLUGIN_ROOT}"
     }
   }
 }

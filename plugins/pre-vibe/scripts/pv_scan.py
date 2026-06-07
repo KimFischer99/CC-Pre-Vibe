@@ -96,10 +96,10 @@ def summarize_agents(path: Path | None, max_lines: int = 18) -> list[str]:
 
 def find_global_agents() -> Path | None:
     candidates: list[Path] = []
-    codex_home = os.environ.get("CODEX_HOME")
-    if codex_home:
-        candidates.append(Path(codex_home) / "AGENTS.md")
-    candidates.append(Path.home() / ".codex" / "AGENTS.md")
+    claude_home = os.environ.get("CLAUDE_HOME")
+    if claude_home:
+        candidates.append(Path(claude_home) / "AGENTS.md")
+    candidates.append(Path.home() / ".claude" / "AGENTS.md")
     for path in candidates:
         if path.exists():
             return path
