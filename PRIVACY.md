@@ -10,7 +10,7 @@ Pre-Vibe is a local-first Claude Code plugin. It does not provide a hosted servi
 
 Pre-Vibe skips common secret-like files and directories during project scans.
 
-Set `inspect_codex_environment` to `false` through Pre-Vibe settings to disable Claude Code home, plugin cache, marketplace, and standalone skill inspection for a project.
+Set `inspect_claude_environment` to `false` through Pre-Vibe settings to disable Claude Code home, plugin cache, marketplace, and standalone skill inspection for a project.
 
 ## Data Written Locally
 

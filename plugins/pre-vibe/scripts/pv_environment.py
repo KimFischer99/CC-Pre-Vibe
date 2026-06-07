@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from pv_models import CodexEnvironment
+from pv_models import ClaudeEnvironment
 from pv_scan import collect_skill_names, find_global_agents
 
 try:
@@ -56,7 +56,7 @@ def collect_plugin_names(cache_root: Path, marketplace_path: Path) -> tuple[list
     return cache_entries, sorted(cached), sorted(marketplace_plugins)
 
 
-def inspect_codex_environment() -> CodexEnvironment:
+def inspect_claude_environment() -> ClaudeEnvironment:
     claude_home = Path.home() / ".claude"
     global_agents = find_global_agents()
     cache_root = claude_home / "plugins" / "cache"
@@ -82,8 +82,8 @@ def inspect_codex_environment() -> CodexEnvironment:
         notes.append("No global CLAUDE.md was found.")
     if not marketplace_has_pre_vibe:
         notes.append("pre-vibe is not listed in the default personal marketplace.")
-    return CodexEnvironment(
-        codex_home=str(claude_home),
+    return ClaudeEnvironment(
+        claude_home=str(claude_home),
         global_agents_path=str(global_agents) if global_agents else None,
         installed_plugin_cache=plugin_cache,
         installed_plugins=installed_plugins,

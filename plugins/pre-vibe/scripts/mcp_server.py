@@ -11,7 +11,7 @@ from typing import Any
 
 from pre_vibe import (
     get_pre_vibe_settings,
-    inspect_codex_environment,
+    inspect_claude_environment,
     prepare_project_start,
     safe_walk,
     set_pre_vibe_intensity,
@@ -129,7 +129,7 @@ def tool_schema() -> list[dict[str, Any]]:
                     },
                     "allow_auto_upgrade": {"type": "boolean"},
                     "architect_project_index": {"type": "boolean"},
-                    "inspect_codex_environment": {"type": "boolean"},
+                    "inspect_claude_environment": {"type": "boolean"},
                 },
             },
         },
@@ -169,7 +169,7 @@ def tool_schema() -> list[dict[str, Any]]:
             },
         },
         {
-            "name": "inspect_codex_environment",
+            "name": "inspect_claude_environment",
             "description": "Inspect Claude Code guidance files, installed standalone skills, plugin cache, enabled plugins, and personal marketplace state.",
             "inputSchema": {
                 "type": "object",
@@ -236,7 +236,7 @@ def call_tool(name: str, arguments: dict[str, Any]) -> dict[str, Any]:
             default_intensity=arguments.get("default_intensity"),
             allow_auto_upgrade=arguments.get("allow_auto_upgrade"),
             architect_project_index=arguments.get("architect_project_index"),
-            inspect_codex_environment=arguments.get("inspect_codex_environment"),
+            inspect_claude_environment=arguments.get("inspect_claude_environment"),
         )
         return text_result(payload, "Pre-Vibe 设置已更新。")
     if name == "set_pre_vibe_intensity":
@@ -260,9 +260,9 @@ def call_tool(name: str, arguments: dict[str, Any]) -> dict[str, Any]:
             arguments.get("scenario", "coding"),
         )
         return text_result(payload, "正在读取项目结构。")
-    if name == "inspect_codex_environment":
+    if name == "inspect_claude_environment":
         settings = get_pre_vibe_settings(project_path(arguments.get("project", ".")))
-        if not settings.get("inspect_codex_environment", True):
+        if not settings.get("inspect_claude_environment", True):
             return text_result(
                 {
                     "inspection_enabled": False,
@@ -270,7 +270,7 @@ def call_tool(name: str, arguments: dict[str, Any]) -> dict[str, Any]:
                 },
                 "此项目已关闭 Claude Code 环境读取。",
             )
-        return text_result(inspect_codex_environment(), "正在读取 Claude Code 环境。")
+        return text_result(inspect_claude_environment(), "正在读取 Claude Code 环境。")
     if name == "write_project_starting_documents":
         project_root = project_path(arguments.get("project_root", "."))
         payload = write_artifacts(

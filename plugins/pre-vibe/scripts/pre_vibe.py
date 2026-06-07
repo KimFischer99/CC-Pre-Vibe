@@ -18,7 +18,7 @@ from pv_artifacts import (
     write_artifacts,
 )
 from pv_compact import (
-    compact_codex_environment,
+    compact_claude_environment,
     compact_decision,
     compact_evidence_ref,
     compact_project_context,
@@ -27,7 +27,7 @@ from pv_compact import (
 from pv_environment import (
     collect_configured_plugins,
     collect_plugin_names,
-    inspect_codex_environment,
+    inspect_claude_environment,
 )
 from pv_models import (
     AWAITING_APPROVAL,
@@ -39,7 +39,7 @@ from pv_models import (
     READY_TO_COMPILE,
     READY_TO_INJECT,
     BlockingQuestion,
-    CodexEnvironment,
+    ClaudeEnvironment,
     ContextAction,
     AgentInstructionRef,
     EvidenceRef,
@@ -119,7 +119,7 @@ __all__ = [
     "AgentInstructionRef",
     "BlockingQuestion",
     "CODING_TERMS",
-    "CodexEnvironment",
+    "ClaudeEnvironment",
     "ContextAction",
     "DONE",
     "EvidenceRef",
@@ -153,7 +153,7 @@ __all__ = [
     "collect_configured_plugins",
     "collect_plugin_names",
     "collect_skill_names",
-    "compact_codex_environment",
+    "compact_claude_environment",
     "compact_decision",
     "compact_evidence_ref",
     "compact_project_context",
@@ -170,7 +170,7 @@ __all__ = [
     "has_ambiguous_external_target",
     "has_cjk",
     "has_target_path",
-    "inspect_codex_environment",
+    "inspect_claude_environment",
     "is_reverse_engineering_task",
     "is_secret_like",
     "looks_like_new_product_task",

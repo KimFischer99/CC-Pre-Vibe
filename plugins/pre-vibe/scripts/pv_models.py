@@ -144,8 +144,8 @@ class ProjectContext:
 
 
 @dataclass
-class CodexEnvironment:
-    codex_home: str | None
+class ClaudeEnvironment:
+    claude_home: str | None
     global_agents_path: str | None
     installed_plugin_cache: list[str]
     installed_plugins: list[str]
@@ -172,7 +172,7 @@ class IntakeDecision:
     artifact_rules: list[str]
     evidence_refs: list[EvidenceRef]
     project_context: ProjectContext | None = None
-    codex_environment: CodexEnvironment | None = None
+    claude_environment: ClaudeEnvironment | None = None
     component_suggestions: list[str] = field(default_factory=list)
     missing_component_suggestions: list[str] = field(default_factory=list)
     evidence_buffer: list[EvidenceItem] = field(default_factory=list)
@@ -187,7 +187,7 @@ class PreVibeSettings:
     default_intensity: str = "auto"
     allow_auto_upgrade: bool = True
     architect_project_index: bool = True
-    inspect_codex_environment: bool = True
+    inspect_claude_environment: bool = True
     session_intensity: str | None = None
 
 

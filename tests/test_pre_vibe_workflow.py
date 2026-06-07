@@ -620,7 +620,7 @@ class SettingsTests(unittest.TestCase):
             self.assertEqual(settings.default_intensity, "auto")
             self.assertTrue(settings.allow_auto_upgrade)
             self.assertTrue(settings.architect_project_index)
-            self.assertTrue(settings.inspect_codex_environment)
+            self.assertTrue(settings.inspect_claude_environment)
 
     def test_save_and_load_roundtrip(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -629,13 +629,13 @@ class SettingsTests(unittest.TestCase):
                 default_intensity="architect",
                 allow_auto_upgrade=False,
                 architect_project_index=False,
-                inspect_codex_environment=False,
+                inspect_claude_environment=False,
             )
             loaded = load_pre_vibe_settings(Path(tmp))
             self.assertEqual(loaded.default_intensity, "architect")
             self.assertFalse(loaded.allow_auto_upgrade)
             self.assertFalse(loaded.architect_project_index)
-            self.assertFalse(loaded.inspect_codex_environment)
+            self.assertFalse(loaded.inspect_claude_environment)
 
     def test_get_settings_returns_dict(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -890,7 +890,7 @@ class PreVibeWorkflowTests(unittest.TestCase):
 
     def test_can_disable_claude_code_environment_inspection(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            update_pre_vibe_settings(Path(tmp), inspect_codex_environment=False)
+            update_pre_vibe_settings(Path(tmp), inspect_claude_environment=False)
             payload = prepare_project_start(
                 "Prepare this repo for a small coding task",
                 tmp,
@@ -898,13 +898,13 @@ class PreVibeWorkflowTests(unittest.TestCase):
                 intensity="mini",
             )
 
-            tool_result = call_tool("inspect_codex_environment", {"project": tmp})
+            tool_result = call_tool("inspect_claude_environment", {"project": tmp})
 
-        self.assertIsNone(payload["codex_environment"])
+        self.assertIsNone(payload["claude_environment"])
         self.assertEqual(payload["component_suggestions"], [])
         self.assertEqual(payload["missing_component_suggestions"], [])
         self.assertFalse(
-            any(ref["id"] == "codex_component_index" for ref in payload["evidence_refs"])
+            any(ref["id"] == "claude_component_index" for ref in payload["evidence_refs"])
         )
         self.assertFalse(tool_result["structuredContent"]["inspection_enabled"])
 

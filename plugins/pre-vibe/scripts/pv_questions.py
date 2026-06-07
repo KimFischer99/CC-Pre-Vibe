@@ -68,7 +68,7 @@ def native_question_payload(decision: IntakeDecision) -> dict[str, Any] | None:
     ]
     return {
         "preferred_surface": "claude_code_native_question_ui",
-        "codex_request_user_input": {
+        "claude_request_user_input": {
             "questions": questions,
         },
         "mcp_elicitation": {

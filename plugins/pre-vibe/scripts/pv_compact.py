@@ -6,7 +6,7 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
-from pv_models import CodexEnvironment, EvidenceRef, IntakeDecision, ProjectContext
+from pv_models import ClaudeEnvironment, EvidenceRef, IntakeDecision, ProjectContext
 from pv_questions import native_question_payload, visible_status_for_state
 
 
@@ -40,7 +40,7 @@ def compact_project_context(context: ProjectContext | None) -> dict[str, Any] | 
     return payload
 
 
-def compact_codex_environment(environment: CodexEnvironment | None) -> dict[str, Any] | None:
+def compact_claude_environment(environment: ClaudeEnvironment | None) -> dict[str, Any] | None:
     if not environment:
         return None
     return {
@@ -96,7 +96,7 @@ def compact_decision(decision: IntakeDecision) -> dict[str, Any]:
             compact_evidence_ref(ref, project_root) for ref in decision.evidence_refs
         ],
         "project_context": compact_project_context(decision.project_context),
-        "codex_environment": compact_codex_environment(decision.codex_environment),
+        "claude_environment": compact_claude_environment(decision.claude_environment),
         "component_suggestions": decision.component_suggestions,
         "missing_component_suggestions": decision.missing_component_suggestions,
         "evidence_buffer": evidence_buffer,

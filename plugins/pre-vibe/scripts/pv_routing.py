@@ -6,14 +6,14 @@ import re
 from pathlib import Path
 from typing import Iterable
 
-from pv_environment import inspect_codex_environment
+from pv_environment import inspect_claude_environment
 from pv_models import (
     INTENSITY_PROFILES,
     NEEDS_CONTEXT,
     NEEDS_USER_INPUT,
     READY_TO_COMPILE,
     BlockingQuestion,
-    CodexEnvironment,
+    ClaudeEnvironment,
     ContextAction,
     EvidenceRef,
     EvidenceItem,
@@ -244,7 +244,7 @@ def assess_uncertainty(task: str) -> str:
 def component_suggestions_for(
     task: str,
     scenario: str,
-    environment: CodexEnvironment,
+    environment: ClaudeEnvironment,
 ) -> tuple[list[str], list[str]]:
     lower = task.lower()
     installed = {name.lower() for name in environment.installed_skills + environment.installed_plugins}
@@ -394,8 +394,8 @@ def context_actions_for(
     scenario: str,
     intensity: str,
     project_context: ProjectContext | None = None,
-    codex_environment: CodexEnvironment | None = None,
-    inspect_codex_environment_enabled: bool = True,
+    claude_environment: ClaudeEnvironment | None = None,
+    inspect_claude_environment_enabled: bool = True,
 ) -> list[ContextAction]:
     profile = INTENSITY_PROFILES[intensity]
     actions: list[ContextAction] = []
@@ -407,10 +407,10 @@ def context_actions_for(
                 "Build a safe project execution index before asking blocking questions.",
             )
         )
-    if inspect_codex_environment_enabled and not codex_environment:
+    if inspect_claude_environment_enabled and not claude_environment:
         actions.append(
             ContextAction(
-                "codex_component_index",
+                "claude_component_index",
                 "environment",
                 "Inspect AGENTS guidance and installed Claude Code components before asking questions.",
             )
@@ -523,12 +523,12 @@ def route_intake(
     project_context: ProjectContext | None = None
     if scan and profile.allow_default_scan:
         project_context = safe_walk(project_root, profile.max_scanned_files, selected_scenario)
-    codex_environment = inspect_codex_environment() if settings.inspect_codex_environment else None
-    if codex_environment:
+    claude_environment = inspect_claude_environment() if settings.inspect_claude_environment else None
+    if claude_environment:
         suggestions, missing_suggestions = component_suggestions_for(
             task,
             selected_scenario,
-            codex_environment,
+            claude_environment,
         )
     else:
         suggestions, missing_suggestions = [], []
@@ -540,8 +540,8 @@ def route_intake(
         selected_scenario,
         selected_intensity,
         project_context,
-        codex_environment,
-        settings.inspect_codex_environment,
+        claude_environment,
+        settings.inspect_claude_environment,
     )
     evidence = list(evidence_refs or [])
     evidence_ids = {item.id for item in evidence}
@@ -556,12 +556,12 @@ def route_intake(
             )
         )
         evidence_ids.add("project_execution_index")
-    if codex_environment and "codex_component_index" not in evidence_ids:
+    if claude_environment and "claude_component_index" not in evidence_ids:
         evidence.append(
             EvidenceRef(
-                "codex_component_index",
-                codex_environment.codex_home or "Claude Code home",
-                f"Indexed {len(codex_environment.installed_plugins)} plugins and {len(codex_environment.installed_skills)} standalone skills.",
+                "claude_component_index",
+                claude_environment.claude_home or "Claude Code home",
+                f"Indexed {len(claude_environment.installed_plugins)} plugins and {len(claude_environment.installed_skills)} standalone skills.",
                 "high",
                 ["CLAUDE.md", "FIRST_PROMPT.md"],
             )
@@ -589,7 +589,7 @@ def route_intake(
         artifact_rules=artifact_rules_for(selected_language),
         evidence_refs=evidence,
         project_context=project_context,
-        codex_environment=codex_environment,
+        claude_environment=claude_environment,
         component_suggestions=suggestions,
         missing_component_suggestions=missing_suggestions,
         evidence_buffer=evidence_buffer_for(evidence),
