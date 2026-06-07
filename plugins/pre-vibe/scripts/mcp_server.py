@@ -21,6 +21,14 @@ from pre_vibe import (
 
 _CLIENT_REQUEST_ID = 10_000
 
+SERVER_INSTRUCTIONS = (
+    "Pre-Vibe prepares project starting context before implementation. "
+    "Show only short user-facing status text in chat; keep structured workflow fields in structuredContent. "
+    "Use native MCP elicitation for blocking questions instead of printing them as ordinary chat. "
+    "Write only the three public project documents: PRE_VIBE_SPEC.md, PROJECT_AGENTS.md, and FIRST_PROMPT.md. "
+    "Do not write internal intake/status/context fields to disk, and keep output paths inside the active project."
+)
+
 
 def json_safe(payload: Any) -> Any:
     return json.loads(json.dumps(payload, ensure_ascii=False, default=to_jsonable))
@@ -58,9 +66,21 @@ def tool_schema() -> list[dict[str, Any]]:
                 "properties": {
                     "task": {"type": "string"},
                     "project": {"type": "string", "default": "."},
-                    "scenario": {"type": "string", "default": "auto"},
-                    "intensity": {"type": "string", "default": "auto"},
-                    "language": {"type": "string", "default": "auto"},
+                    "scenario": {
+                        "type": "string",
+                        "enum": ["auto", "general", "research", "coding", "mixed"],
+                        "default": "auto",
+                    },
+                    "intensity": {
+                        "type": "string",
+                        "enum": ["auto", "mini", "default", "architect"],
+                        "default": "auto",
+                    },
+                    "language": {
+                        "type": "string",
+                        "enum": ["auto", "zh", "en", "bilingual"],
+                        "default": "auto",
+                    },
                     "scan": {"type": "boolean", "default": True},
                 },
                 "required": ["task"],
@@ -89,8 +109,16 @@ def tool_schema() -> list[dict[str, Any]]:
                 "type": "object",
                 "properties": {
                     "project": {"type": "string", "default": "."},
-                    "scenario": {"type": "string", "default": "coding"},
-                    "intensity": {"type": "string", "default": "default"},
+                    "scenario": {
+                        "type": "string",
+                        "enum": ["general", "research", "coding", "mixed"],
+                        "default": "coding",
+                    },
+                    "intensity": {
+                        "type": "string",
+                        "enum": ["mini", "default", "architect"],
+                        "default": "default",
+                    },
                 },
             },
         },
@@ -106,11 +134,17 @@ def tool_schema() -> list[dict[str, Any]]:
                 "type": "object",
                 "properties": {
                     "output_dir": {"type": "string", "default": "."},
+                    "project_root": {"type": "string", "default": "."},
                     "contents": {
                         "type": "object",
+                        "properties": {
+                            "spec": {"type": "string"},
+                            "agents": {"type": "string"},
+                            "prompt": {"type": "string"},
+                        },
+                        "required": ["spec", "agents", "prompt"],
                         "additionalProperties": {"type": "string"},
                     },
-                    "status": {"type": "object"},
                 },
                 "required": ["contents"],
             },
@@ -170,7 +204,13 @@ def request_client_elicitation(arguments: dict[str, Any]) -> dict[str, Any]:
                 "available": False,
                 "reason": "Codex closed the MCP stream before returning a question UI response.",
             }
-        response = json.loads(line)
+        try:
+            response = json.loads(line)
+        except json.JSONDecodeError:
+            return {
+                "available": False,
+                "reason": "Codex returned malformed JSON while opening the native question UI.",
+            }
         if response.get("id") != request_id:
             continue
         if "error" in response:
@@ -219,7 +259,7 @@ def call_tool(name: str, arguments: dict[str, Any]) -> dict[str, Any]:
         payload = write_artifacts(
             Path(arguments.get("output_dir", ".")),
             arguments["contents"],
-            arguments.get("status"),
+            project_root=Path(arguments.get("project_root", ".")),
         )
         return text_result(payload, "项目初始文档已构建。")
     raise ValueError(f"unknown tool: {name}")
@@ -238,6 +278,7 @@ def handle(request: dict[str, Any]) -> dict[str, Any] | None:
                 "protocolVersion": "2024-11-05",
                 "capabilities": {"tools": {}},
                 "serverInfo": {"name": "pre-vibe", "version": "0.5.0"},
+                "instructions": SERVER_INSTRUCTIONS,
             },
         }
     if method == "tools/list":
@@ -264,7 +305,16 @@ def main() -> int:
     for line in sys.stdin:
         if not line.strip():
             continue
-        response = handle(json.loads(line))
+        try:
+            request = json.loads(line)
+        except json.JSONDecodeError as exc:
+            response = {
+                "jsonrpc": "2.0",
+                "id": None,
+                "error": {"code": -32700, "message": f"parse error: {exc.msg}"},
+            }
+        else:
+            response = handle(request)
         if response is not None:
             sys.stdout.write(json.dumps(response, ensure_ascii=False) + "\n")
             sys.stdout.flush()
