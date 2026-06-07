@@ -5,7 +5,7 @@
       "args": [
         "${CLAUDE_PLUGIN_ROOT}/scripts/mcp_server.py"
       ],
-      "cwd": "${CLAUDE_PLUGIN_ROOT}"
+      "cwd": "${CLAUDE_PROJECT_DIR}"
     }
   }
 }

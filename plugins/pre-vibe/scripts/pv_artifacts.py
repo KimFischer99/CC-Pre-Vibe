@@ -136,17 +136,33 @@ def write_artifacts(
     status: dict[str, Any] | None = None,
     project_root: Path | None = None,
     allow_project_index: bool = True,
+    overwrite_existing: bool = False,
 ) -> dict[str, Any]:
     if status is not None:
         raise ValueError("status is internal context and must not be written to disk")
-    output_dir = ensure_output_dir_inside_project(output_dir, project_root)
-    output_dir.mkdir(parents=True, exist_ok=True)
+    root = (project_root or Path.cwd()).expanduser().resolve()
+    output_dir = ensure_output_dir_inside_project(output_dir, root)
     written: dict[str, str] = {}
     validate_artifact_contents(contents, allow_project_index=allow_project_index)
-    for key, text in contents.items():
+    targets: dict[str, Path] = {}
+    for key in contents:
         if key not in ARTIFACT_FILENAMES:
             raise ValueError(f"unsupported artifact key: {key}")
         path = output_dir / ARTIFACT_FILENAMES[key]
+        targets[key] = path
+        if (
+            key == "agents"
+            and path.resolve() == root / "CLAUDE.md"
+            and path.exists()
+            and not overwrite_existing
+        ):
+            raise ValueError(
+                "CLAUDE.md already exists at the project root; use project_agents "
+                "for PROJECT_CLAUDE.md or pass overwrite_existing only after explicit user approval"
+            )
+    output_dir.mkdir(parents=True, exist_ok=True)
+    for key, text in contents.items():
+        path = targets[key]
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(redact_secret_like(text).rstrip() + "\n", encoding="utf-8")
         written[key] = str(path.relative_to(output_dir))

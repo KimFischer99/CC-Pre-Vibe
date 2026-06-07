@@ -1,6 +1,6 @@
 # Pre-Vibe
 
-[![Version](https://img.shields.io/badge/version-v0.1.2-brightgreen)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v0.1.3-brightgreen)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 Pre-Vibe turns a rough first request into **three structured documents** before real work begins. It reads your project safely, asks only what it needs to know, then hands Claude Code a compact execution contract — so every session starts with clear scope, project-aware guidance, and a focused prompt.
@@ -126,14 +126,14 @@ The Python layer handles deterministic routing, scanning, validation, and safe w
 - Allowlist project scanning — only reads safe filenames and suffixes
 - Skips secrets, keys, tokens, databases, logs
 - Keeps output paths inside the active project
-- Never silently overwrites existing root `CLAUDE.md`
+- Never silently overwrites existing root `CLAUDE.md`; use `PROJECT_CLAUDE.md` or explicitly approve replacement
 
 ---
 
 ## Development
 
 ```bash
-claude plugin validate plugins/pre-vibe
+claude plugin validate plugins/pre-vibe --strict
 python3 -m py_compile plugins/pre-vibe/scripts/*.py
 python3 -m unittest discover -s tests
 ```

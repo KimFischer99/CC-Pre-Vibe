@@ -1,6 +1,6 @@
 # Pre-Vibe Plugin Package
 
-This directory is the distributable Claude Code plugin package for Pre-Vibe v0.1.2.
+This directory is the distributable Claude Code plugin package for Pre-Vibe v0.1.3.
 
 Pre-Vibe is backed by a local stdio MCP server and plugin-scoped workflow guidance. Users enable it from the Claude Code plugin picker, then start with a rough task or starter prompt.
 
@@ -16,7 +16,7 @@ Pre-Vibe is backed by a local stdio MCP server and plugin-scoped workflow guidan
 
 ## Runtime Behavior
 
-The MCP server exposes tools that prepare project starts, inspect safe local context, read Claude Code guidance, manage effort settings, request native question UI, and write Claude Code-authored starting documents.
+The MCP server exposes tools that prepare project starts, inspect safe local context, read Claude Code guidance, manage effort settings, request native question UI, and write Claude Code-authored starting documents. Project-relative defaults resolve through `CLAUDE_PROJECT_DIR`, while bundled scripts are referenced through `CLAUDE_PLUGIN_ROOT`.
 
 Tool results use short user-visible status text such as "正在构建项目初始文档。". Detailed workflow state is returned as structured content for Claude Code.
 
@@ -34,7 +34,7 @@ Tool results use short user-visible status text such as "正在构建项目初�
 From the repository root:
 
 ```bash
-claude plugin validate plugins/pre-vibe
+claude plugin validate plugins/pre-vibe --strict
 python3 -m py_compile plugins/pre-vibe/scripts/*.py
 python3 -m unittest discover -s tests
 ```

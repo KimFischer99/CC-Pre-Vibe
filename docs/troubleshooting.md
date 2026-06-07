@@ -34,7 +34,7 @@ The MCP write result includes `handoff.required_next_actions` to make this seque
 ## Validation Commands
 
 ```bash
-claude plugin validate plugins/pre-vibe
+claude plugin validate plugins/pre-vibe --strict
 python3 -m py_compile plugins/pre-vibe/scripts/*.py
 python3 -m unittest discover -s tests
 ```

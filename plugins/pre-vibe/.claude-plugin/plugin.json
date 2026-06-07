@@ -1,15 +1,15 @@
 {
   "name": "pre-vibe",
   "displayName": "Pre-Vibe",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Claude Code workflow plugin that turns rough first-session requests into project-specific starting context, handbook guidance, and a compact first prompt.",
   "author": {
     "name": "Kim Fischer",
     "email": "opensource@users.noreply.github.com",
-    "url": "https://github.com/KimFischer99/Pre-Vibe"
+    "url": "https://github.com/KimFischer99/CC-Pre-Vibe"
   },
-  "homepage": "https://github.com/KimFischer99/Pre-Vibe",
-  "repository": "https://github.com/KimFischer99/Pre-Vibe",
+  "homepage": "https://github.com/KimFischer99/CC-Pre-Vibe",
+  "repository": "https://github.com/KimFischer99/CC-Pre-Vibe",
   "license": "MIT",
   "keywords": [
     "agent",

@@ -7,7 +7,7 @@ Thanks for helping improve Pre-Vibe.
 Use Python 3 and run checks from the repository root:
 
 ```bash
-claude plugin validate plugins/pre-vibe
+claude plugin validate plugins/pre-vibe --strict
 python3 -m py_compile plugins/pre-vibe/scripts/*.py
 python3 -m unittest discover -s tests
 ```

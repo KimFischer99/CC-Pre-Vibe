@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.1.3 - 2026-06-07
+
+- Protected existing root `CLAUDE.md` files from silent overwrite unless replacement is explicitly approved.
+- Resolved project-root defaults through `CLAUDE_PROJECT_DIR` for MCP tools, including `set_effort_level`.
+- Kept MCP helper responses structured even when no public status text is provided.
+- Updated repository metadata and public version strings for `KimFischer99/CC-Pre-Vibe`.
+- Added strict Claude Code plugin validation to CI and development docs.
+
 ## v0.1.2 - 2026-06-07
 
 - Shortened skill invocation from `/pre-vibe/pre-vibe-workflow` to `/pre-vibe`.

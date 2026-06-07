@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import sys
 import tempfile
 import unittest
@@ -69,7 +70,7 @@ from pv_models import (  # noqa: E402
     PreVibeSettings,
     to_jsonable,
 )
-from mcp_server import call_tool  # noqa: E402
+from mcp_server import call_tool, text_result  # noqa: E402
 
 
 # ══════════════════════════════════════════════════════════════════════════
@@ -517,6 +518,38 @@ class ArtifactWriteTests(unittest.TestCase):
                     allow_project_index=False,
                 )
 
+    def test_write_artifacts_rejects_existing_root_claude_without_approval(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            claude_path = Path(tmp) / "CLAUDE.md"
+            claude_path.write_text("# Existing Rules\n", encoding="utf-8")
+
+            with self.assertRaisesRegex(ValueError, "CLAUDE.md already exists"):
+                write_artifacts(
+                    Path(tmp),
+                    {"spec": "# S", "agents": "# A", "prompt": "# P"},
+                    project_root=Path(tmp),
+                    allow_project_index=False,
+                )
+
+            self.assertEqual(claude_path.read_text(encoding="utf-8"), "# Existing Rules\n")
+            self.assertFalse((Path(tmp) / "PRE_VIBE_SPEC.md").exists())
+            self.assertFalse((Path(tmp) / "FIRST_PROMPT.md").exists())
+
+    def test_write_artifacts_can_overwrite_root_claude_after_approval(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            claude_path = Path(tmp) / "CLAUDE.md"
+            claude_path.write_text("# Existing Rules\n", encoding="utf-8")
+
+            write_artifacts(
+                Path(tmp),
+                {"spec": "# S", "agents": "# A", "prompt": "# P"},
+                project_root=Path(tmp),
+                allow_project_index=False,
+                overwrite_existing=True,
+            )
+
+            self.assertEqual(claude_path.read_text(encoding="utf-8"), "# A\n")
+
     def test_write_artifacts_handoff_contract(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             result = write_artifacts(
@@ -709,6 +742,12 @@ class RouteIntakeTests(unittest.TestCase):
 # ══════════════════════════════════════════════════════════════════════════
 
 class MCPServerDispatchTests(unittest.TestCase):
+    def test_text_result_includes_structured_content_without_public_text(self) -> None:
+        result = text_result({"ok": True})
+        self.assertIn("content", result)
+        self.assertIn("structuredContent", result)
+        self.assertTrue(result["structuredContent"]["ok"])
+
     def test_call_unknown_tool_raises(self) -> None:
         with self.assertRaises(ValueError):
             call_tool("nonexistent_tool", {})
@@ -750,6 +789,27 @@ class MCPServerDispatchTests(unittest.TestCase):
             })
             sc = result["structuredContent"]
             self.assertEqual(sc["session_intensity"], "mini")
+
+    def test_call_set_effort_level_uses_claude_project_dir(self) -> None:
+        old_project_dir = os.environ.get("CLAUDE_PROJECT_DIR")
+        old_cwd = Path.cwd()
+        with tempfile.TemporaryDirectory() as project, tempfile.TemporaryDirectory() as plugin_root:
+            os.environ["CLAUDE_PROJECT_DIR"] = project
+            os.chdir(plugin_root)
+            try:
+                result = call_tool("set_effort_level", {"level": "mini"})
+                project_intensity, _ = resolve_requested_intensity(Path(project))
+                plugin_intensity, _ = resolve_requested_intensity(Path(plugin_root))
+            finally:
+                os.chdir(old_cwd)
+                if old_project_dir is None:
+                    os.environ.pop("CLAUDE_PROJECT_DIR", None)
+                else:
+                    os.environ["CLAUDE_PROJECT_DIR"] = old_project_dir
+
+        self.assertEqual(result["structuredContent"]["session_intensity"], "mini")
+        self.assertEqual(project_intensity, "mini")
+        self.assertEqual(plugin_intensity, "auto")
 
     def test_call_scan_project_safe(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

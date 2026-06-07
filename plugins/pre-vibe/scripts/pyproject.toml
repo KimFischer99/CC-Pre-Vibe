@@ -1,6 +1,6 @@
 [project]
 name = "pre-vibe"
-version = "0.1.2"
+version = "0.1.3"
 description = "Claude Code plugin that turns rough first-session requests into project-specific starting context"
 requires-python = ">=3.11"
 license = { text = "MIT" }
@@ -16,9 +16,9 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/KimFischer99/Pre-Vibe"
-Repository = "https://github.com/KimFischer99/Pre-Vibe"
-Changelog = "https://github.com/KimFischer99/Pre-Vibe/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/KimFischer99/CC-Pre-Vibe"
+Repository = "https://github.com/KimFischer99/CC-Pre-Vibe"
+Changelog = "https://github.com/KimFischer99/CC-Pre-Vibe/blob/main/CHANGELOG.md"
 
 [project.scripts]
 pre-vibe = "pre_vibe:main"

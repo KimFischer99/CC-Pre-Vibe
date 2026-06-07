@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 from typing import Any
@@ -38,14 +39,6 @@ def json_safe(payload: Any) -> Any:
 def text_result(payload: Any, public_text: str | None = None) -> dict[str, Any]:
     if public_text is None:
         public_text = json.dumps(payload, ensure_ascii=False, indent=2, default=to_jsonable)
-        return {
-            "content": [
-                {
-                    "type": "text",
-                    "text": public_text,
-                }
-            ]
-        }
     return {
         "content": [
             {
@@ -55,6 +48,16 @@ def text_result(payload: Any, public_text: str | None = None) -> dict[str, Any]:
         ],
         "structuredContent": json_safe(payload),
     }
+
+
+def project_path(value: Any = None) -> Path:
+    raw = str(value or "").strip()
+    if raw and raw != ".":
+        return Path(raw).expanduser().resolve()
+    project_dir = os.environ.get("CLAUDE_PROJECT_DIR")
+    if project_dir:
+        return Path(project_dir).expanduser().resolve()
+    return Path(raw or ".").expanduser().resolve()
 
 
 def tool_schema() -> list[dict[str, Any]]:
@@ -103,6 +106,7 @@ def tool_schema() -> list[dict[str, Any]]:
             "inputSchema": {
                 "type": "object",
                 "properties": {
+                    "project": {"type": "string", "default": "."},
                     "level": {
                         "type": "string",
                         "enum": ["mini", "default", "architect"],
@@ -198,6 +202,11 @@ def tool_schema() -> list[dict[str, Any]]:
                         "enum": ["mini", "default", "architect"],
                         "default": "default",
                     },
+                    "overwrite_existing": {
+                        "type": "boolean",
+                        "default": False,
+                        "description": "Only set true after explicit user approval to replace an existing root CLAUDE.md.",
+                    },
                 },
                 "required": ["contents"],
             },
@@ -208,9 +217,10 @@ def tool_schema() -> list[dict[str, Any]]:
 def call_tool(name: str, arguments: dict[str, Any]) -> dict[str, Any]:
     payload: Any
     if name == "prepare_project_start":
+        project = project_path(arguments.get("project", "."))
         payload = prepare_project_start(
             arguments["task"],
-            arguments.get("project", "."),
+            project,
             scenario=arguments.get("scenario", "auto"),
             intensity=arguments.get("intensity", "auto"),
             language=arguments.get("language", "auto"),
@@ -218,11 +228,11 @@ def call_tool(name: str, arguments: dict[str, Any]) -> dict[str, Any]:
         )
         return text_result(payload, str(payload["user_visible_status"]))
     if name == "get_pre_vibe_settings":
-        payload = get_pre_vibe_settings(Path(arguments.get("project", ".")))
+        payload = get_pre_vibe_settings(project_path(arguments.get("project", ".")))
         return text_result(payload, "正在读取 Pre-Vibe 设置。")
     if name == "update_pre_vibe_settings":
         payload = update_pre_vibe_settings(
-            Path(arguments.get("project", ".")),
+            project_path(arguments.get("project", ".")),
             default_intensity=arguments.get("default_intensity"),
             allow_auto_upgrade=arguments.get("allow_auto_upgrade"),
             architect_project_index=arguments.get("architect_project_index"),
@@ -231,13 +241,13 @@ def call_tool(name: str, arguments: dict[str, Any]) -> dict[str, Any]:
         return text_result(payload, "Pre-Vibe 设置已更新。")
     if name == "set_pre_vibe_intensity":
         payload = set_pre_vibe_intensity(
-            Path(arguments.get("project", ".")),
+            project_path(arguments.get("project", ".")),
             arguments["intensity"],
         )
         return text_result(payload, "Pre-Vibe 强度档位已设置。")
     if name == "set_effort_level":
         payload = set_pre_vibe_intensity(
-            Path("."),
+            project_path(arguments.get("project", ".")),
             arguments["level"],
         )
         return text_result(payload, f"Effort level set to: {arguments['level']}.")
@@ -245,13 +255,13 @@ def call_tool(name: str, arguments: dict[str, Any]) -> dict[str, Any]:
         intensity = arguments.get("intensity", "default")
         max_files = INTENSITY_PROFILES[intensity].max_scanned_files
         payload = safe_walk(
-            Path(arguments.get("project", ".")).expanduser().resolve(),
+            project_path(arguments.get("project", ".")),
             max_files,
             arguments.get("scenario", "coding"),
         )
         return text_result(payload, "正在读取项目结构。")
     if name == "inspect_codex_environment":
-        settings = get_pre_vibe_settings(Path(arguments.get("project", ".")))
+        settings = get_pre_vibe_settings(project_path(arguments.get("project", ".")))
         if not settings.get("inspect_codex_environment", True):
             return text_result(
                 {
@@ -262,11 +272,13 @@ def call_tool(name: str, arguments: dict[str, Any]) -> dict[str, Any]:
             )
         return text_result(inspect_codex_environment(), "正在读取 Claude Code 环境。")
     if name == "write_project_starting_documents":
+        project_root = project_path(arguments.get("project_root", "."))
         payload = write_artifacts(
             Path(arguments.get("output_dir", ".")),
             arguments["contents"],
-            project_root=Path(arguments.get("project_root", ".")),
+            project_root=project_root,
             allow_project_index=arguments.get("intensity") == "architect",
+            overwrite_existing=bool(arguments.get("overwrite_existing", False)),
         )
         return text_result(payload, "项目初始文档已构建，正在等待交接确认。")
     raise ValueError(f"unknown tool: {name}")
@@ -284,7 +296,7 @@ def handle(request: dict[str, Any]) -> dict[str, Any] | None:
             "result": {
                 "protocolVersion": "2024-11-05",
                 "capabilities": {"tools": {}},
-                "serverInfo": {"name": "pre-vibe", "version": "0.1.2"},
+                "serverInfo": {"name": "pre-vibe", "version": "0.1.3"},
                 "instructions": SERVER_INSTRUCTIONS,
             },
         }

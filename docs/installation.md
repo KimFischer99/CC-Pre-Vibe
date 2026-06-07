@@ -2,10 +2,10 @@
 
 Pre-Vibe is distributed as a Claude Code plugin package from this repository.
 
-## From Community Marketplace
+## From This Marketplace
 
 ```bash
-claude plugin install pre-vibe@claude-community
+claude plugin install pre-vibe@pre-vibe
 ```
 
 ## Local Development Install
@@ -30,7 +30,7 @@ This loads the plugin directly without requiring installation. Run `/reload-plug
 ## Verify
 
 ```bash
-claude plugin validate plugins/pre-vibe
+claude plugin validate plugins/pre-vibe --strict
 python3 -m py_compile plugins/pre-vibe/scripts/*.py
 python3 -m unittest discover -s tests
 ```
