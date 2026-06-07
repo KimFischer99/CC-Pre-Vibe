@@ -10,10 +10,13 @@ from pathlib import Path
 from typing import Any
 
 from pre_vibe import (
+    get_pre_vibe_settings,
     inspect_codex_environment,
     prepare_project_start,
     safe_walk,
+    set_pre_vibe_intensity,
     to_jsonable,
+    update_pre_vibe_settings,
     write_artifacts,
     INTENSITY_PROFILES,
 )
@@ -25,7 +28,7 @@ SERVER_INSTRUCTIONS = (
     "Pre-Vibe prepares project starting context before implementation. "
     "Show only short user-facing status text in chat; keep structured workflow fields in structuredContent. "
     "Use native MCP elicitation for blocking questions instead of printing them as ordinary chat. "
-    "Write only the three public project documents: PRE_VIBE_SPEC.md, PROJECT_AGENTS.md, and FIRST_PROMPT.md. "
+    "Write PRE_VIBE_SPEC.md, AGENTS.md or PROJECT_AGENTS.md, and FIRST_PROMPT.md; architect effort may also write PROJECT_INDEX.md. "
     "Do not write internal intake/status/context fields to disk, and keep output paths inside the active project."
 )
 
@@ -87,6 +90,47 @@ def tool_schema() -> list[dict[str, Any]]:
             },
         },
         {
+            "name": "get_pre_vibe_settings",
+            "description": "Read project-local Pre-Vibe settings, including default effort level and session override.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "project": {"type": "string", "default": "."},
+                },
+            },
+        },
+        {
+            "name": "update_pre_vibe_settings",
+            "description": "Update project-local Pre-Vibe settings. Use this when the user wants to set default effort behavior.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "project": {"type": "string", "default": "."},
+                    "default_intensity": {
+                        "type": "string",
+                        "enum": ["auto", "mini", "default", "architect"],
+                    },
+                    "allow_auto_upgrade": {"type": "boolean"},
+                    "architect_project_index": {"type": "boolean"},
+                },
+            },
+        },
+        {
+            "name": "set_pre_vibe_intensity",
+            "description": "Set the current Pre-Vibe session effort level to auto, mini, default, or architect.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "project": {"type": "string", "default": "."},
+                    "intensity": {
+                        "type": "string",
+                        "enum": ["auto", "mini", "default", "architect"],
+                    },
+                },
+                "required": ["intensity"],
+            },
+        },
+        {
             "name": "open_question_dialog",
             "description": "Open Codex native MCP elicitation for blocking questions returned by prepare_project_start. Use this instead of printing questions in chat.",
             "inputSchema": {
@@ -140,10 +184,16 @@ def tool_schema() -> list[dict[str, Any]]:
                         "properties": {
                             "spec": {"type": "string"},
                             "agents": {"type": "string"},
+                            "project_agents": {"type": "string"},
                             "prompt": {"type": "string"},
+                            "project_index": {"type": "string"},
                         },
-                        "required": ["spec", "agents", "prompt"],
                         "additionalProperties": {"type": "string"},
+                    },
+                    "intensity": {
+                        "type": "string",
+                        "enum": ["mini", "default", "architect"],
+                        "default": "default",
                     },
                 },
                 "required": ["contents"],
@@ -236,6 +286,23 @@ def call_tool(name: str, arguments: dict[str, Any]) -> dict[str, Any]:
             scan=bool(arguments.get("scan", True)),
         )
         return text_result(payload, payload["user_visible_status"])
+    if name == "get_pre_vibe_settings":
+        payload = get_pre_vibe_settings(Path(arguments.get("project", ".")))
+        return text_result(payload, "正在读取 Pre-Vibe 设置。")
+    if name == "update_pre_vibe_settings":
+        payload = update_pre_vibe_settings(
+            Path(arguments.get("project", ".")),
+            default_intensity=arguments.get("default_intensity"),
+            allow_auto_upgrade=arguments.get("allow_auto_upgrade"),
+            architect_project_index=arguments.get("architect_project_index"),
+        )
+        return text_result(payload, "Pre-Vibe 设置已更新。")
+    if name == "set_pre_vibe_intensity":
+        payload = set_pre_vibe_intensity(
+            Path(arguments.get("project", ".")),
+            arguments["intensity"],
+        )
+        return text_result(payload, "Pre-Vibe 强度档位已设置。")
     if name == "open_question_dialog":
         payload = request_client_elicitation(arguments)
         public_text = (
@@ -260,6 +327,7 @@ def call_tool(name: str, arguments: dict[str, Any]) -> dict[str, Any]:
             Path(arguments.get("output_dir", ".")),
             arguments["contents"],
             project_root=Path(arguments.get("project_root", ".")),
+            allow_project_index=arguments.get("intensity") == "architect",
         )
         return text_result(payload, "项目初始文档已构建。")
     raise ValueError(f"unknown tool: {name}")
@@ -277,7 +345,7 @@ def handle(request: dict[str, Any]) -> dict[str, Any] | None:
             "result": {
                 "protocolVersion": "2024-11-05",
                 "capabilities": {"tools": {}},
-                "serverInfo": {"name": "pre-vibe", "version": "0.5.0"},
+                "serverInfo": {"name": "pre-vibe", "version": "0.6.0"},
                 "instructions": SERVER_INSTRUCTIONS,
             },
         }

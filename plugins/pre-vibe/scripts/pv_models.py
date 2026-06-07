@@ -67,6 +67,7 @@ class BlockingQuestion:
     question: str
     reason: str
     options: list[str] = field(default_factory=list)
+    recommended_answer: str | None = None
     requires_native_ui: bool = True
 
 
@@ -83,6 +84,43 @@ class EvidenceRef:
     id: str
     source: str
     summary: str
+    confidence: str = "medium"
+    used_in: list[str] = field(default_factory=list)
+
+
+@dataclass
+class EvidenceItem:
+    id: str
+    source: str
+    summary: str
+    confidence: str = "medium"
+    used_in: list[str] = field(default_factory=list)
+
+
+@dataclass
+class ProjectLanguageItem:
+    preferred_term: str
+    definition: str
+    avoid_terms: list[str] = field(default_factory=list)
+    notes: str = ""
+
+
+@dataclass
+class ExistingContext:
+    existing_files: list[str]
+    missing_files: list[str]
+    has_pre_vibe_docs: bool
+    has_partial_pre_vibe_docs: bool
+    recommended_action: str
+    recovery_options: list[str]
+
+
+@dataclass
+class AgentInstructionRef:
+    path: str
+    scope: str
+    priority: str
+    kind: str
 
 
 @dataclass
@@ -100,6 +138,9 @@ class ProjectContext:
     global_agents_summary: list[str]
     project_agents_path: str | None
     project_agents_summary: list[str]
+    agent_instruction_map: list[AgentInstructionRef] = field(default_factory=list)
+    existing_context: ExistingContext | None = None
+    git_state: str = "unknown"
 
 
 @dataclass
@@ -134,6 +175,19 @@ class IntakeDecision:
     codex_environment: CodexEnvironment | None = None
     component_suggestions: list[str] = field(default_factory=list)
     missing_component_suggestions: list[str] = field(default_factory=list)
+    evidence_buffer: list[EvidenceItem] = field(default_factory=list)
+    project_language: list[ProjectLanguageItem] = field(default_factory=list)
+    document_output_plan: dict[str, str] = field(default_factory=dict)
+    agent_guidance_mode: str = "proposal"
+    recovery_action: str | None = None
+
+
+@dataclass
+class PreVibeSettings:
+    default_intensity: str = "auto"
+    allow_auto_upgrade: bool = True
+    architect_project_index: bool = True
+    session_intensity: str | None = None
 
 
 def to_jsonable(value: Any) -> Any:

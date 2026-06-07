@@ -66,6 +66,11 @@ def compact_evidence_ref(ref: EvidenceRef, project_root: str | None = None) -> d
 
 def compact_decision(decision: IntakeDecision) -> dict[str, Any]:
     project_root = decision.project_context.root if decision.project_context else None
+    evidence_buffer = []
+    for item in decision.evidence_buffer:
+        payload = asdict(item)
+        payload["source"] = redact_path_for_context(item.source, project_root) or item.source
+        evidence_buffer.append(payload)
     return {
         "state": decision.state,
         "scenario": decision.scenario,
@@ -84,6 +89,11 @@ def compact_decision(decision: IntakeDecision) -> dict[str, Any]:
         "codex_environment": compact_codex_environment(decision.codex_environment),
         "component_suggestions": decision.component_suggestions,
         "missing_component_suggestions": decision.missing_component_suggestions,
+        "evidence_buffer": evidence_buffer,
+        "project_language": [asdict(item) for item in decision.project_language],
+        "document_output_plan": decision.document_output_plan,
+        "agent_guidance_mode": decision.agent_guidance_mode,
+        "recovery_action": decision.recovery_action,
         "question_request": native_question_payload(decision),
         "user_visible_status": visible_status_for_state(decision.state, decision.language),
     }

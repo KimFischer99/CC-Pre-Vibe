@@ -16,10 +16,13 @@ from pv_models import (
     CodexEnvironment,
     ContextAction,
     EvidenceRef,
+    EvidenceItem,
     IntakeDecision,
     ProjectContext,
+    ProjectLanguageItem,
 )
 from pv_scan import safe_walk
+from pv_settings import resolve_requested_intensity
 from pv_terms import (
     AMBIGUOUS_TARGET_TERMS,
     ARCHITECT_TERMS,
@@ -116,6 +119,75 @@ def choose_intensity(task: str, scenario: str, requested: str = "auto") -> str:
     if scenario in {"coding", "mixed"} and any(term in lower for term in ("mvp", "新项目", "完整")):
         return "architect"
     return "default"
+
+
+def document_output_plan_for(
+    project_context: ProjectContext | None,
+    intensity: str,
+    project_root: Path | None = None,
+) -> tuple[dict[str, str], str]:
+    has_root_agents = bool(project_context and project_context.project_agents_path)
+    if not has_root_agents and project_context is None and project_root is not None:
+        has_root_agents = (project_root / "AGENTS.md").exists()
+    plan = {
+        "spec": "PRE_VIBE_SPEC.md",
+        "prompt": "FIRST_PROMPT.md",
+    }
+    if has_root_agents:
+        plan["project_agents"] = "PROJECT_AGENTS.md"
+        mode = "proposal"
+    else:
+        plan["agents"] = "AGENTS.md"
+        mode = "create"
+    if intensity == "architect":
+        plan["project_index"] = "PROJECT_INDEX.md"
+    return plan, mode
+
+
+def evidence_buffer_for(evidence_refs: Iterable[EvidenceRef]) -> list[EvidenceItem]:
+    return [
+        EvidenceItem(
+            id=ref.id,
+            source=ref.source,
+            summary=ref.summary,
+            confidence=ref.confidence,
+            used_in=ref.used_in or ["PRE_VIBE_SPEC.md"],
+        )
+        for ref in evidence_refs
+    ]
+
+
+def project_language_for(task: str, language: str) -> list[ProjectLanguageItem]:
+    lower = task.lower()
+    items: list[ProjectLanguageItem] = []
+    if any(term in lower for term in ("account", "账号", "账户", "user", "用户")):
+        items.append(
+            ProjectLanguageItem(
+                "User" if language != "zh" else "用户",
+                "The person who signs in or operates the product.",
+                ["Account", "Customer"] if language != "zh" else ["账号", "客户"],
+                "Confirm billing or workspace ownership later if the product needs it.",
+            )
+        )
+    if any(term in lower for term in ("plugin", "插件", "codex")):
+        items.append(
+            ProjectLanguageItem(
+                "Codex plugin" if language != "zh" else "Codex 插件",
+                "A Codex extension package that can bundle MCP tools and workflow guidance.",
+                ["skill", "slash command"] if language != "zh" else ["skill", "slash 命令"],
+                "Use this term when describing Pre-Vibe-style integrations.",
+            )
+        )
+    if any(term in lower for term in ("project", "项目", "mvp", "app", "应用")):
+        items.append(
+            ProjectLanguageItem(
+                "Project" if language != "zh" else "项目",
+                "The active workspace and deliverable being prepared for Codex execution.",
+                ["task dump"] if language != "zh" else ["临时任务堆"],
+                "Keep this term tied to the current workspace, not the Pre-Vibe implementation.",
+            )
+        )
+    return items[:6]
 
 
 def assess_risk(task: str, scenario: str) -> str:
@@ -222,6 +294,7 @@ def blocking_questions_for(task: str, scenario: str, intensity: str, language: s
                 ),
                 "The target and authorization determine whether any reverse-analysis workflow is allowed.",
                 ["提供路径和授权确认", "仅做通用方法说明", "暂停逆向任务"] if zh else ["Provide path and authorization", "General method only", "Pause reverse task"],
+                "提供路径和授权确认" if zh else "Provide path and authorization",
             )
         )
     if scenario in {"coding", "mixed"} and looks_like_new_product_task(task):
@@ -236,6 +309,7 @@ def blocking_questions_for(task: str, scenario: str, intensity: str, language: s
                 ),
                 "The core flow determines product scope, UI states, data handling, and acceptance criteria.",
                 ["一句话说明核心流程", "由现有文档推断", "先做最小可运行流程"] if zh else ["Describe the core flow", "Infer from docs", "Start with the smallest runnable flow"],
+                "先做最小可运行流程" if zh else "Start with the smallest runnable flow",
             )
         )
         if any(term in task.lower() for term in ("ai", "简历", "resume", "upload", "上传", "用户", "账号")):
@@ -250,6 +324,7 @@ def blocking_questions_for(task: str, scenario: str, intensity: str, language: s
                     ),
                     "Data, accounts, and AI dependencies change security, privacy, implementation, and verification.",
                     ["本地/演示版", "需要上传/存储", "需要账号或第三方 API"] if zh else ["Local/demo only", "Needs upload/storage", "Needs account or API"],
+                    "本地/演示版" if zh else "Local/demo only",
                 )
             )
         questions.append(
@@ -263,6 +338,7 @@ def blocking_questions_for(task: str, scenario: str, intensity: str, language: s
                 ),
                 "The delivery level changes implementation depth and validation.",
                 ["可运行 MVP", "可点击原型", "生产可部署版本"] if zh else ["Runnable MVP", "Clickable prototype", "Production-deployable"],
+                "可运行 MVP" if zh else "Runnable MVP",
             )
         )
     if scenario == "research" and intensity != "mini":
@@ -277,6 +353,7 @@ def blocking_questions_for(task: str, scenario: str, intensity: str, language: s
                 ),
                 "The decision determines source selection and output structure.",
                 ["实施方案", "选型判断", "竞品/市场比较"] if zh else ["Implementation plan", "Tool choice", "Market/competitor comparison"],
+                "实施方案" if zh else "Implementation plan",
             )
         )
     if scenario in {"coding", "mixed"} and ("deploy" in task.lower() or "部署" in task):
@@ -287,6 +364,7 @@ def blocking_questions_for(task: str, scenario: str, intensity: str, language: s
                 "本轮是否允许真实部署，还是只准备部署方案和本地验证？" if zh else "Is live deployment allowed, or should this only prepare a deployment plan and local verification?",
                 "Deployment permissions change risk, approvals, and verification.",
                 ["只准备方案和本地验证", "允许真实部署", "先询问每个部署动作"] if zh else ["Plan and local verify only", "Live deploy allowed", "Ask before each deploy action"],
+                "只准备方案和本地验证" if zh else "Plan and local verify only",
             )
         )
     return questions[: profile.max_questions]
@@ -342,22 +420,49 @@ def artifact_rules_for(language: str) -> list[str]:
         return [
             "三份 Markdown 必须围绕用户任务和项目证据定制写作。",
             "最终产物不得出现 pre-vibe、插件实现、MCP server 或 workflow 内部表述，除非用户任务本身就是开发该工具。",
-            "PRE_VIBE_SPEC.md 面向初级用户，是项目 handbook；包含目标、用户场景、范围、需求、验收、边界、风险、建议、组件使用建议和下一步。",
-            "PROJECT_AGENTS.md 和 FIRST_PROMPT.md 面向 Codex；只保留执行规则、约束、文件指针、验收标准和必要操作边界。",
-            "PROJECT_AGENTS.md 必须参考全局 AGENTS.md；不得加入与全局指令冲突或削弱全局指令的规则。",
-            "PRE_VIBE_SPEC.md 与 PROJECT_AGENTS.md 必须彼此独立；任一文件不得出现另一文件的文件名或路径。FIRST_PROMPT.md 可以引用必要文件。",
+            "PRE_VIBE_SPEC.md 面向初级用户，是项目 handbook；必须包含 Project Language 和 Evidence。",
+            "AGENTS.md 或 PROJECT_AGENTS.md 面向 Codex；只保留执行规则、约束、文件指针、验收标准和必要操作边界。",
+            "AGENTS.md / PROJECT_AGENTS.md 必须参考全局 AGENTS.md；不得加入与全局指令冲突或削弱全局指令的规则。",
+            "FIRST_PROMPT.md 必须是 execution contract，包含 Completion Contract、停止询问条件和验证要求。",
+            "architect 档可额外生成 PROJECT_INDEX.md；FIRST_PROMPT.md 可以引用 PROJECT_INDEX.md。",
+            "PRE_VIBE_SPEC.md、AGENTS.md/PROJECT_AGENTS.md、PROJECT_INDEX.md 必须彼此独立；任一文件不得出现另一文件的文件名或路径。",
             "问题必须通过 Codex 原生提问/审批 UI 展示；不得把阻塞问题直接写在普通聊天消息中。",
+            "每个阻塞问题必须包含推荐答案；能从项目文件推断的信息不得重复询问用户。",
             "信息不足时先询问或补上下文，不得用模板语言填空。",
         ]
     return [
         "All three Markdown files must be custom-written from the user's task and project evidence.",
         "Final artifacts must not mention pre-vibe, plugin implementation, MCP server, or workflow internals unless the user is building this tool.",
-        "PRE_VIBE_SPEC.md is a beginner-friendly project handbook with goal, user scenarios, scope, requirements, acceptance criteria, boundaries, risks, suggestions, component recommendations, and next steps.",
-        "PROJECT_AGENTS.md and FIRST_PROMPT.md are agent-facing and should contain only execution rules, constraints, file pointers, acceptance criteria, and necessary operation boundaries.",
-        "PROJECT_AGENTS.md must account for global AGENTS.md and must not conflict with or weaken global instructions.",
-        "PRE_VIBE_SPEC.md and PROJECT_AGENTS.md must be standalone; neither file may mention the other file's filename or path. FIRST_PROMPT.md may reference necessary files.",
+        "PRE_VIBE_SPEC.md is a beginner-friendly handbook and must include Project Language and Evidence sections.",
+        "AGENTS.md or PROJECT_AGENTS.md is agent-facing and should contain only execution rules, constraints, file pointers, acceptance criteria, and necessary operation boundaries.",
+        "AGENTS.md / PROJECT_AGENTS.md must account for global AGENTS.md and must not conflict with or weaken global instructions.",
+        "FIRST_PROMPT.md must be an execution contract with Completion Contract, stop/ask conditions, and verification requirements.",
+        "Architect effort may also produce PROJECT_INDEX.md; FIRST_PROMPT.md may reference PROJECT_INDEX.md.",
+        "PRE_VIBE_SPEC.md, AGENTS.md/PROJECT_AGENTS.md, and PROJECT_INDEX.md must be standalone; none may mention another filename or path.",
         "Blocking questions must be shown through Codex's native question/approval UI, not as ordinary chat text.",
+        "Every blocking question must include a recommended answer; do not ask for facts already inferable from project files.",
         "When context is missing, ask or acquire context; never fill gaps with template language.",
+    ]
+
+
+def recovery_questions_for(project_context: ProjectContext | None, language: str) -> list[BlockingQuestion]:
+    existing = project_context.existing_context if project_context else None
+    if not existing or not existing.recovery_options:
+        return []
+    zh = language in {"zh", "bilingual"}
+    return [
+        BlockingQuestion(
+            "existing_context_recovery",
+            "上下文恢复" if zh else "Recovery",
+            (
+                "检测到已有 Pre-Vibe 启动文档。本轮要复用更新、重新生成，还是先比较旧上下文？"
+                if zh
+                else "Existing Pre-Vibe starting documents were found. Should this run reuse, regenerate, or compare them first?"
+            ),
+            "Existing context changes whether SPEC/AGENTS are updated and FIRST_PROMPT is fully rewritten.",
+            existing.recovery_options,
+            existing.recovery_options[0],
+        )
     ]
 
 
@@ -387,18 +492,24 @@ def route_intake(
 ) -> IntakeDecision:
     selected_scenario = classify_scenario(task, scenario)
     selected_language = choose_language(task, language)
-    selected_intensity = choose_intensity(task, selected_scenario, intensity)
+    project_root = Path(project).expanduser().resolve()
+    intensity_request, settings = resolve_requested_intensity(project_root, intensity)
+    selected_intensity = choose_intensity(task, selected_scenario, intensity_request)
+    if intensity_request == "auto" and not settings.allow_auto_upgrade and selected_intensity == "architect":
+        selected_intensity = "default"
     profile = INTENSITY_PROFILES[selected_intensity]
     project_context: ProjectContext | None = None
     if scan and profile.allow_default_scan:
-        project_context = safe_walk(Path(project).expanduser().resolve(), profile.max_scanned_files, selected_scenario)
+        project_context = safe_walk(project_root, profile.max_scanned_files, selected_scenario)
     codex_environment = inspect_codex_environment()
     suggestions, missing_suggestions = component_suggestions_for(
         task,
         selected_scenario,
         codex_environment,
     )
-    questions = blocking_questions_for(task, selected_scenario, selected_intensity, selected_language)
+    questions = recovery_questions_for(project_context, selected_language)
+    questions.extend(blocking_questions_for(task, selected_scenario, selected_intensity, selected_language))
+    questions = questions[: profile.max_questions]
     actions = context_actions_for(
         task,
         selected_scenario,
@@ -414,6 +525,8 @@ def route_intake(
                 "project_execution_index",
                 project_context.root,
                 f"Scanned {len(project_context.scanned_files)} allowlisted files and {len(project_context.key_dirs)} top-level directories.",
+                "high",
+                ["PRE_VIBE_SPEC.md", "AGENTS.md", "FIRST_PROMPT.md"],
             )
         )
         evidence_ids.add("project_execution_index")
@@ -423,12 +536,19 @@ def route_intake(
                 "codex_component_index",
                 codex_environment.codex_home or "Codex home",
                 f"Indexed {len(codex_environment.installed_plugins)} plugins and {len(codex_environment.installed_skills)} standalone skills.",
+                "high",
+                ["AGENTS.md", "FIRST_PROMPT.md"],
             )
         )
+    output_plan, agent_guidance_mode = document_output_plan_for(project_context, selected_intensity, project_root)
+    if selected_intensity != "architect" or not settings.architect_project_index:
+        output_plan.pop("project_index", None)
     state = determine_next_state(questions, actions, evidence)
     assumptions = []
     if selected_intensity == "mini":
         assumptions.append("Use the smallest useful preparation path unless the user asks for deeper planning.")
+    if settings.session_intensity:
+        assumptions.append(f"Use session intensity override: {settings.session_intensity}.")
     return IntakeDecision(
         raw_input=task,
         scenario=selected_scenario,
@@ -446,6 +566,11 @@ def route_intake(
         codex_environment=codex_environment,
         component_suggestions=suggestions,
         missing_component_suggestions=missing_suggestions,
+        evidence_buffer=evidence_buffer_for(evidence),
+        project_language=project_language_for(task, selected_language),
+        document_output_plan=output_plan,
+        agent_guidance_mode=agent_guidance_mode,
+        recovery_action=project_context.existing_context.recommended_action if project_context and project_context.existing_context else None,
     )
 
 

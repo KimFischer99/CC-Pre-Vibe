@@ -26,10 +26,25 @@ def option_objects(question: BlockingQuestion) -> list[dict[str, str]]:
     options = list(question.options[:3])
     if len(options) < 2:
         options.extend(["Use best default", "Ask later"][len(options) :])
+    if question.recommended_answer and question.recommended_answer in options:
+        options = [question.recommended_answer] + [
+            option for option in options if option != question.recommended_answer
+        ]
+
+    def label_for(option: str) -> str:
+        if question.recommended_answer and option == question.recommended_answer:
+            suffix = " (Recommended)"
+            return f"{option[: 36 - len(suffix)].rstrip()}{suffix}"
+        return option[:36]
+
     return [
         {
-            "label": option[:36],
-            "description": question.reason[:140] or "Choose this option to continue.",
+            "label": label_for(option),
+            "description": (
+                f"Recommended default. {question.reason}"
+                if question.recommended_answer and option == question.recommended_answer
+                else question.reason
+            )[:160] or "Choose this option to continue.",
         }
         for option in options[:3]
     ]
@@ -43,6 +58,8 @@ def native_question_payload(decision: IntakeDecision) -> dict[str, Any] | None:
             "header": clean_header(question.header),
             "id": question.id,
             "question": question.question,
+            "recommended_answer": question.recommended_answer,
+            "reason": question.reason,
             "options": option_objects(question),
         }
         for question in decision.blocking_questions

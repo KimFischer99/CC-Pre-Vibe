@@ -4,10 +4,11 @@ from __future__ import annotations
 
 import os
 import re
+import subprocess
 from pathlib import Path
 from typing import Iterable
 
-from pv_models import ProjectContext
+from pv_models import AgentInstructionRef, ExistingContext, ProjectContext
 
 
 SECRET_PATTERNS = (
@@ -35,6 +36,9 @@ ALLOWLIST_FILENAMES = {
     "README.en.md",
     "AGENTS.md",
     "PROJECT_AGENTS.md",
+    "FIRST_PROMPT.md",
+    "PROJECT_INDEX.md",
+    "AGENT.md",
     "CLAUDE.md",
     "package.json",
     "pnpm-lock.yaml",
@@ -102,6 +106,120 @@ def find_global_agents() -> Path | None:
     return None
 
 
+def relative_path(path: Path, root: Path) -> str:
+    try:
+        return str(path.relative_to(root))
+    except ValueError:
+        return str(path)
+
+
+def detect_existing_context(root: Path) -> ExistingContext:
+    required = [
+        "PRE_VIBE_SPEC.md",
+        "FIRST_PROMPT.md",
+    ]
+    agent_options = ["PROJECT_AGENTS.md", "AGENTS.md"]
+    optional = ["AGENT.md", "PROJECT_INDEX.md"]
+    existing = [name for name in required + agent_options + optional if (root / name).exists()]
+    for entry in sorted(root.iterdir(), key=lambda path: path.name.lower()) if root.exists() else []:
+        lowered = entry.name.lower()
+        if entry.is_file() and entry.suffix.lower() == ".md" and any(
+            marker in lowered for marker in ("prd", "architecture", "review", "modification", "audit")
+        ):
+            existing.append(entry.name)
+    has_required_context = any((root / name).exists() for name in required)
+    has_project_agents_handoff = (root / "PROJECT_AGENTS.md").exists()
+    has_agent_handoff = has_project_agents_handoff or (
+        has_required_context and (root / "AGENTS.md").exists()
+    )
+    missing = [name for name in required if not (root / name).exists()]
+    if not has_agent_handoff:
+        missing.append("AGENTS.md or PROJECT_AGENTS.md")
+    required_count = len([name for name in required if name in existing])
+    has_all = not missing
+    has_partial = 0 < (required_count + int(has_agent_handoff)) < len(required) + 1
+    if has_all:
+        action = "reuse_update_or_compare"
+        options = [
+            "Reuse and update existing context",
+            "Regenerate from current request",
+            "Compare old context before deciding",
+        ]
+    elif has_partial:
+        action = "complete_missing_context"
+        options = [
+            "Complete missing starting documents",
+            "Regenerate all starting documents",
+            "Compare existing files before deciding",
+        ]
+    else:
+        action = "create_new_context"
+        options = []
+    return ExistingContext(
+        existing_files=existing,
+        missing_files=missing,
+        has_pre_vibe_docs=has_all,
+        has_partial_pre_vibe_docs=has_partial,
+        recommended_action=action,
+        recovery_options=options,
+    )
+
+
+def detect_git_state(root: Path) -> str:
+    if not (root / ".git").exists():
+        return "not_git_repo"
+    try:
+        result = subprocess.run(
+            ["git", "status", "--short"],
+            cwd=root,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return "unknown"
+    if result.returncode != 0:
+        return "unknown"
+    return "dirty" if result.stdout.strip() else "clean"
+
+
+def detect_agent_instruction_map(root: Path, max_nested: int = 24) -> list[AgentInstructionRef]:
+    refs: list[AgentInstructionRef] = []
+    seen: set[str] = set()
+
+    def add(path: Path, kind: str, priority: str) -> None:
+        rel = relative_path(path, root)
+        if rel in seen:
+            return
+        seen.add(rel)
+        scope = "." if path.parent == root else relative_path(path.parent, root)
+        refs.append(AgentInstructionRef(rel, scope, priority, kind))
+
+    for name, kind, priority in (
+        ("AGENTS.md", "agents", "root"),
+        ("AGENT.md", "legacy_agents", "legacy"),
+        ("CLAUDE.md", "claude_memory", "tool_specific"),
+        (".github/copilot-instructions.md", "copilot", "tool_specific"),
+    ):
+        path = root / name
+        if path.exists() and not is_secret_like(path):
+            add(path, kind, priority)
+
+    cursor_rules = root / ".cursor" / "rules"
+    if cursor_rules.exists() and not is_secret_like(cursor_rules):
+        add(cursor_rules, "cursor_rules", "tool_specific")
+
+    for path in sorted(root.glob("*/AGENTS.md"), key=lambda p: str(p).lower()):
+        if len(refs) >= max_nested:
+            break
+        if any(part in SKIP_DIRS for part in path.parts):
+            continue
+        if not is_secret_like(path):
+            add(path, "agents", "nearest-wins")
+    return refs
+
+
 def safe_walk(
     root: Path,
     max_files: int,
@@ -116,6 +234,9 @@ def safe_walk(
     do_not_touch: list[str] = []
     global_agents = find_global_agents()
     project_agents = root / "AGENTS.md"
+    existing_context = detect_existing_context(root)
+    agent_map = detect_agent_instruction_map(root)
+    git_state = detect_git_state(root)
 
     if not root.exists():
         return ProjectContext(
@@ -132,6 +253,9 @@ def safe_walk(
             summarize_agents(global_agents),
             None,
             [],
+            [],
+            existing_context,
+            git_state,
         )
 
     if max_files <= 0:
@@ -149,6 +273,9 @@ def safe_walk(
             summarize_agents(global_agents),
             str(project_agents) if project_agents.exists() else None,
             summarize_agents(project_agents if project_agents.exists() else None),
+            agent_map,
+            existing_context,
+            git_state,
         )
 
     for entry in sorted(root.iterdir(), key=lambda p: p.name.lower()):
@@ -201,6 +328,9 @@ def safe_walk(
         summarize_agents(global_agents),
         str(project_agents) if project_agents.exists() else None,
         summarize_agents(project_agents if project_agents.exists() else None),
+        agent_map,
+        existing_context,
+        git_state,
     )
 
 

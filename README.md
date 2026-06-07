@@ -1,92 +1,96 @@
 # Pre-Vibe
 
-Pre-Vibe is a Codex plugin that turns a rough first message into clean project starting context before the agent begins real work.
+Pre-Vibe is a Codex plugin for preparing a new session before real work begins. It turns a rough first message into project-specific starting context, guided questions, AGENTS.md-compatible guidance, and a compact execution prompt.
 
-It is designed for new Codex users, junior builders, and early product sessions where the first request is short, vague, or missing execution detail. Instead of sending Codex straight into implementation, Pre-Vibe reads safe project context, clarifies only the blocking unknowns, builds task-specific starting documents, and continues with a compact first prompt after approval.
-
-Pre-Vibe is a plugin package, not a bundled skill and not a command-style prompt workflow.
+It is designed for new Codex users, junior builders, and early product sessions where the first request is short, vague, or missing execution detail. Pre-Vibe reads safe project context, checks Codex guidance, asks only blocking questions, writes starting documents, and hands Codex a concise first prompt after approval.
 
 ## Install
+
+The easiest beginner path is to ask Codex:
+
+```text
+Help me install the Pre-Vibe plugin from KimFischer99/Pre-Vibe into Codex.
+```
+
+Codex can then run the install command for you and explain each step. If you already know how to run Codex plugin commands, use:
 
 ```bash
 codex plugin marketplace add KimFischer99/Pre-Vibe --sparse .agents/plugins --sparse plugins/pre-vibe && codex plugin add pre-vibe@pre-vibe
 ```
 
-Then start a new Codex thread, open **Plugins**, and make sure **Pre-Vibe** is enabled.
+After installation, start a new Codex thread, open **Plugins**, and enable **Pre-Vibe**.
 
 ## Quick Start
 
 1. Open Codex in the project you want to prepare.
 2. Enable **Pre-Vibe** from the plugin picker.
-3. Type a rough request, or choose one of the Pre-Vibe starter prompts.
-4. Let Codex read the project and Codex environment first.
-5. Answer the native question dialogs if Codex opens them.
-6. Review the generated starting context, then approve the handoff.
-
-No command syntax is required. If a Codex surface does not expose native MCP elicitation yet, Pre-Vibe reports that limitation instead of falling back to long chat-form questions.
+3. Type a rough request such as “Help me turn this idea into a build plan.”
+4. Answer the native question dialogs when Codex opens them.
+5. Review the generated starting documents.
+6. Approve the handoff so Codex can continue from `FIRST_PROMPT.md`.
 
 ## What It Builds
 
-Pre-Vibe writes three project-specific Markdown files in the active project:
+Pre-Vibe writes task-specific Markdown in the active project:
 
-- `PRE_VIBE_SPEC.md`: a beginner-friendly project handbook with goals, scope, user flow, acceptance criteria, risks, suggestions, and useful project pointers.
-- `PROJECT_AGENTS.md`: concise Codex-facing execution guidance that respects global `AGENTS.md`.
-- `FIRST_PROMPT.md`: the compact prompt that should be injected after approval.
+- `PRE_VIBE_SPEC.md`: a beginner-friendly handbook with goals, scope, project language, evidence, acceptance criteria, risks, and next steps.
+- `AGENTS.md`: created when the project has no root agent guidance.
+- `PROJECT_AGENTS.md`: created as a reviewable proposal when a root `AGENTS.md` already exists.
+- `FIRST_PROMPT.md`: a compact execution contract for Codex, fully rewritten on each handoff.
+- `PROJECT_INDEX.md`: architect effort only; an index of project intent, resources, tools, files, environment, and purpose.
 
-These files must be custom-written from the user's request, project evidence, environment evidence, and user answers. They must not contain reusable template language or implementation details about Pre-Vibe itself unless the user is explicitly working on Pre-Vibe.
-
-## Workflow
-
-Pre-Vibe follows the same product-first spirit as spec-driven tools such as [github/spec-kit](https://github.com/github/spec-kit): clarify the outcome, preserve project principles, plan the next execution boundary, then let the agent work from a stable prompt. The implementation is different: Pre-Vibe stays inside Codex as a plugin with an MCP companion instead of installing command files or skills.
-
-The normal flow is:
-
-1. Prepare the project start.
-2. Read safe local project files and Codex component state.
-3. Request native question UI for blocking unknowns.
-4. Build the project starting documents.
-5. Ask for approval.
-6. Clear the working context and inject only the compact first prompt.
+`PRE_VIBE_SPEC.md`, the agent guidance document, and `PROJECT_INDEX.md` stay independent. `FIRST_PROMPT.md` may reference the files Codex should use for the handoff.
 
 ## Effort Levels
 
+Pre-Vibe can choose effort automatically, and users can adjust it through plugin settings tools.
+
 - `mini`: small ordinary tasks; up to 3 blocking questions.
 - `default`: normal research or coding tasks; up to 5 blocking questions.
-- `architect`: new products, refactors, or high-uncertainty work; up to 10 blocking questions.
+- `architect`: new products, refactors, high-uncertainty work; up to 10 blocking questions and `PROJECT_INDEX.md`.
 
-These are workflow effort levels, not strict token budgets.
+Settings available through the plugin:
 
-## Repository Layout
+- default effort: `auto`, `mini`, `default`, or `architect`
+- session effort override
+- architect-only project index toggle
+- auto-upgrade behavior
 
-- `.agents/plugins/marketplace.json`: repo marketplace entry used by Codex installation.
-- `plugins/pre-vibe/`: distributable Codex plugin package.
-- `plugins/pre-vibe/.codex-plugin/plugin.json`: plugin manifest.
-- `plugins/pre-vibe/.mcp.json`: bundled MCP server registration.
-- `plugins/pre-vibe/scripts/pre_vibe.py`: deterministic workflow utilities.
-- `plugins/pre-vibe/scripts/mcp_server.py`: minimal stdio MCP server.
-- `architecture.md`: current architecture notes.
-- `pre-vibe_PRD.md`: product requirements.
+## Workflow
+
+Pre-Vibe follows a session-start workflow:
+
+1. Detect existing Pre-Vibe documents, AGENTS.md files, and git state.
+2. Build a safe project and Codex environment index.
+3. Resolve effort level and document output plan.
+4. Ask native UI questions for unresolved blocking decisions.
+5. Capture local and online evidence for `PRE_VIBE_SPEC.md`.
+6. Build customized starting documents.
+7. Clear the working context and hand off through `FIRST_PROMPT.md`.
+
+## Architecture
+
+The plugin package lives in `plugins/pre-vibe/` and includes:
+
+- `.codex-plugin/plugin.json`: plugin manifest
+- `.mcp.json`: bundled stdio MCP server registration
+- `skills/pre-vibe-workflow/SKILL.md`: plugin-scoped workflow guidance
+- `scripts/mcp_server.py`: MCP tool surface
+- `scripts/pv_*.py`: focused workflow modules for routing, scanning, questions, settings, artifacts, and compact output
+
+The MCP server returns short user-visible status text and structured workflow data for Codex. The Python layer provides deterministic routing, validation, scanning, settings, and safe writing; Codex authors the final task-specific Markdown.
 
 ## Development Checks
 
-Validate the plugin package:
-
 ```bash
 python3 ~/.codex/skills/.system/plugin-creator/scripts/validate_plugin.py plugins/pre-vibe
-python3 -m py_compile plugins/pre-vibe/scripts/pre_vibe.py plugins/pre-vibe/scripts/mcp_server.py
-```
-
-Run a code review before distribution:
-
-```bash
+python3 -m py_compile plugins/pre-vibe/scripts/*.py
 codex review --uncommitted
 ```
 
-The project intentionally does not include automated scenario tests. Workflow quality should be checked in live Codex sessions.
-
 ## Safety
 
-Pre-Vibe uses allowlist project scanning and skips secret-like files by default, including environment files, private keys, token stores, database dumps, and production logs. It stores temporary preparation notes only in the active conversation context.
+Pre-Vibe uses allowlist project scanning, skips secret-like files, keeps output paths inside the active project, and avoids silently overwriting existing root `AGENTS.md`.
 
 ## License
 

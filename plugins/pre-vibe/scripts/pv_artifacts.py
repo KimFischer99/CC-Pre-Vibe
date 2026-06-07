@@ -10,8 +10,10 @@ from typing import Any
 
 ARTIFACT_FILENAMES = {
     "spec": "PRE_VIBE_SPEC.md",
-    "agents": "PROJECT_AGENTS.md",
+    "agents": "AGENTS.md",
+    "project_agents": "PROJECT_AGENTS.md",
     "prompt": "FIRST_PROMPT.md",
+    "project_index": "PROJECT_INDEX.md",
 }
 
 
@@ -34,16 +36,36 @@ def redact_secret_like(text: str) -> str:
     return redacted
 
 
-def validate_artifact_contents(contents: dict[str, str]) -> None:
+def validate_artifact_contents(contents: dict[str, str], allow_project_index: bool = True) -> None:
+    if "spec" not in contents or "prompt" not in contents:
+        raise ValueError("contents must include spec and prompt")
+    if "agents" not in contents and "project_agents" not in contents:
+        raise ValueError("contents must include agents or project_agents")
+    if "project_index" in contents and not allow_project_index:
+        raise ValueError("project_index is only allowed for architect effort")
     for key, text in contents.items():
-        if key in {"spec", "agents", "prompt"} and "INIT_AGENTS.md" in text:
+        if key in {"spec", "agents", "project_agents", "prompt", "project_index"} and "INIT_AGENTS.md" in text:
             raise ValueError("artifact content must not reference the retired INIT_AGENTS.md filename")
     spec_text = contents.get("spec", "")
-    agents_text = contents.get("agents", "")
-    if re.search(r"(?i)(^|[/\\])PROJECT_AGENTS\.md\b|PROJECT_AGENTS\.md\b", spec_text):
-        raise ValueError("PRE_VIBE_SPEC.md must not reference PROJECT_AGENTS.md")
-    if re.search(r"(?i)(^|[/\\])PRE_VIBE_SPEC\.md\b|PRE_VIBE_SPEC\.md\b", agents_text):
-        raise ValueError("PROJECT_AGENTS.md must not reference PRE_VIBE_SPEC.md")
+    agent_text = contents.get("agents", "") + "\n" + contents.get("project_agents", "")
+    index_text = contents.get("project_index", "")
+    forbidden_by_key = {
+        "spec": ("AGENTS.md", "PROJECT_AGENTS.md", "PROJECT_INDEX.md"),
+        "agents": ("PRE_VIBE_SPEC.md", "PROJECT_INDEX.md"),
+        "project_agents": ("PRE_VIBE_SPEC.md", "PROJECT_INDEX.md"),
+        "project_index": ("PRE_VIBE_SPEC.md", "AGENTS.md", "PROJECT_AGENTS.md"),
+    }
+    for key, filenames in forbidden_by_key.items():
+        text = contents.get(key, "")
+        if not text:
+            continue
+        for forbidden in filenames:
+            if re.search(rf"(?i)(^|[/\\]){re.escape(forbidden)}\b|{re.escape(forbidden)}\b", text):
+                raise ValueError(f"{ARTIFACT_FILENAMES[key]} must not reference {forbidden}")
+    if "agents" in contents and "project_agents" in contents:
+        raise ValueError("write either agents or project_agents, not both")
+    if "project_index" in contents and "prompt" not in contents:
+        raise ValueError("PROJECT_INDEX.md may only be written with FIRST_PROMPT.md")
 
 
 def ensure_output_dir_inside_project(output_dir: Path, project_root: Path | None = None) -> Path:
@@ -60,13 +82,14 @@ def write_artifacts(
     contents: dict[str, str],
     status: dict[str, Any] | None = None,
     project_root: Path | None = None,
+    allow_project_index: bool = True,
 ) -> dict[str, str]:
     if status is not None:
         raise ValueError("status is internal context and must not be written to disk")
     output_dir = ensure_output_dir_inside_project(output_dir, project_root)
     output_dir.mkdir(parents=True, exist_ok=True)
     written: dict[str, str] = {}
-    validate_artifact_contents(contents)
+    validate_artifact_contents(contents, allow_project_index=allow_project_index)
     for key, text in contents.items():
         if key not in ARTIFACT_FILENAMES:
             raise ValueError(f"unsupported artifact key: {key}")
