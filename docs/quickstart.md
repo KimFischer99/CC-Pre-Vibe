@@ -9,7 +9,7 @@ Help me turn this idea into a build plan.
 ```
 
 4. Answer any native question dialogs Claude Code opens.
-5. Review the generated `PRE_VIBE_SPEC.md`, `AGENTS.md` or `PROJECT_AGENTS.md`, and `FIRST_PROMPT.md`.
+5. Review the generated `PRE_VIBE_SPEC.md`, `CLAUDE.md` or `PROJECT_CLAUDE.md`, and `FIRST_PROMPT.md`.
 6. Approve the handoff when Claude Code asks.
 7. Claude Code reads `FIRST_PROMPT.md` and continues from that execution contract.
 
@@ -20,7 +20,7 @@ Pre-Vibe is for the start of a session. It should clarify scope, write durable p
 | File | Purpose |
 | --- | --- |
 | `PRE_VIBE_SPEC.md` | Beginner-friendly project handbook with goals, language, evidence, risks, and acceptance criteria. |
-| `AGENTS.md` | Created only when the project has no root agent guidance. |
-| `PROJECT_AGENTS.md` | Reviewable proposal when the project already has root `AGENTS.md`. |
+| `CLAUDE.md` | Created only when the project has no root agent guidance. |
+| `PROJECT_CLAUDE.md` | Reviewable proposal when the project already has root `CLAUDE.md`. |
 | `FIRST_PROMPT.md` | Compact execution contract for Claude Code after handoff approval. |
 | `PROJECT_INDEX.md` | Architect-only project index for high-uncertainty work. |

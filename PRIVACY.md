@@ -5,7 +5,7 @@ Pre-Vibe is a local-first Claude Code plugin. It does not provide a hosted servi
 ## Data Read Locally
 
 - Allowlisted project files and top-level structure.
-- Root or global `AGENTS.md` guidance when present.
+- Root or global `CLAUDE.md` guidance when present.
 - Claude Code plugin and skill state under the current user's `~/.claude/` folder.
 
 Pre-Vibe skips common secret-like files and directories during project scans.
@@ -15,7 +15,7 @@ Set `inspect_codex_environment` to `false` through Pre-Vibe settings to disable 
 ## Data Written Locally
 
 - `PRE_VIBE_SPEC.md`
-- `AGENTS.md` or `PROJECT_AGENTS.md`
+- `CLAUDE.md` or `PROJECT_CLAUDE.md`
 - `FIRST_PROMPT.md`
 - `PROJECT_INDEX.md` for architect effort
 - `.pre-vibe/settings.json` when settings are changed

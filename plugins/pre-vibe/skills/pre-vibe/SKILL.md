@@ -14,7 +14,7 @@ This skill is bundled with the Pre-Vibe plugin as workflow guidance for Claude C
 3. If existing Pre-Vibe documents are detected, ask whether to reuse/update, regenerate, or compare before writing.
 4. Use project files, AGENTS guidance, and safe environment evidence before asking the user for facts already available locally.
 5. Every blocking question must include why it matters and the recommended answer.
-6. Keep `PRE_VIBE_SPEC.md`, `AGENTS.md` or `PROJECT_AGENTS.md`, and `PROJECT_INDEX.md` independent from each other; `FIRST_PROMPT.md` may reference the files needed for handoff.
+6. Keep `PRE_VIBE_SPEC.md`, `CLAUDE.md` or `PROJECT_CLAUDE.md`, and `PROJECT_INDEX.md` independent from each other; `FIRST_PROMPT.md` may reference the files needed for handoff.
 7. Treat online references as evidence for `PRE_VIBE_SPEC.md`; keep `FIRST_PROMPT.md` compact.
 8. Never stop after `write_project_starting_documents`. Document writing moves the workflow to approval, not completion.
 9. After documents are written, immediately ask the user to approve the `FIRST_PROMPT.md` handoff.
@@ -35,8 +35,8 @@ If Claude Code cannot open native question UI, pause and report that the UI is u
 ## Document Contract
 
 - `PRE_VIBE_SPEC.md`: beginner-friendly project handbook with Project Language and Evidence.
-- `AGENTS.md`: created only when the project has no root `AGENTS.md`.
-- `PROJECT_AGENTS.md`: proposal when a root `AGENTS.md` already exists.
+- `CLAUDE.md`: created only when the project has no root `CLAUDE.md`.
+- `PROJECT_CLAUDE.md`: proposal when a root `CLAUDE.md` already exists.
 - `FIRST_PROMPT.md`: rewritten fully on each Pre-Vibe handoff as the execution contract.
 - `PROJECT_INDEX.md`: architect effort only; indexes project intent, resources, tools, files, environment, and purpose for Claude Code.
 

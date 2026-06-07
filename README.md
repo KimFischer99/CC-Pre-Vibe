@@ -1,9 +1,9 @@
 # Pre-Vibe
 
-[![Version](https://img.shields.io/badge/version-v0.1.1-brightgreen)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v0.1.2-brightgreen)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Pre-Vibe is a Claude Code plugin for preparing a new session before real work begins. It turns a rough first message into project-specific starting context, guided questions, AGENTS.md-compatible guidance, and a compact execution prompt.
+Pre-Vibe is a Claude Code plugin for preparing a new session before real work begins. It turns a rough first message into project-specific starting context, guided questions, CLAUDE.md-compatible guidance, and a compact execution prompt.
 
 It is designed for new Claude Code users, junior builders, and early product sessions where the first request is short, vague, or missing execution detail. Pre-Vibe reads safe project context, checks Claude Code guidance, asks only blocking questions, writes starting documents, and hands Claude Code a concise first prompt after approval.
 
@@ -37,8 +37,8 @@ After installation, start a new Claude Code session and enable **Pre-Vibe** from
 Pre-Vibe writes task-specific Markdown in the active project:
 
 - `PRE_VIBE_SPEC.md`: a beginner-friendly handbook with goals, scope, project language, evidence, acceptance criteria, risks, and next steps.
-- `AGENTS.md`: created when the project has no root agent guidance.
-- `PROJECT_AGENTS.md`: created as a reviewable proposal when a root `AGENTS.md` already exists.
+- `CLAUDE.md`: created when the project has no root agent guidance.
+- `PROJECT_CLAUDE.md`: created as a reviewable proposal when a root `CLAUDE.md` already exists.
 - `FIRST_PROMPT.md`: a compact execution contract for Claude Code, fully rewritten on each handoff.
 - `PROJECT_INDEX.md`: architect effort only; an index of project intent, resources, tools, files, environment, and purpose.
 
@@ -64,7 +64,7 @@ Settings available through the plugin:
 
 Pre-Vibe follows a session-start workflow:
 
-1. Detect existing Pre-Vibe documents, AGENTS.md files, and git state.
+1. Detect existing Pre-Vibe documents, CLAUDE.md files, and git state.
 2. Build a safe project and Claude Code environment index.
 3. Resolve effort level and document output plan.
 4. Ask native UI questions for unresolved blocking decisions.
@@ -129,7 +129,7 @@ python3 -m unittest discover -s tests
 
 ## Safety
 
-Pre-Vibe uses allowlist project scanning, skips secret-like files, keeps output paths inside the active project, and avoids silently overwriting existing root `AGENTS.md`.
+Pre-Vibe uses allowlist project scanning, skips secret-like files, keeps output paths inside the active project, and avoids silently overwriting existing root `CLAUDE.md`.
 
 ## License
 

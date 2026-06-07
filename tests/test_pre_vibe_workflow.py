@@ -413,7 +413,7 @@ class ExistingContextTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             (Path(tmp) / "PRE_VIBE_SPEC.md").touch()
             (Path(tmp) / "FIRST_PROMPT.md").touch()
-            (Path(tmp) / "AGENTS.md").touch()
+            (Path(tmp) / "CLAUDE.md").touch()
             ctx = detect_existing_context(Path(tmp))
             self.assertTrue(ctx.has_pre_vibe_docs)
             self.assertEqual(ctx.recommended_action, "reuse_update_or_compare")
@@ -421,7 +421,7 @@ class ExistingContextTests(unittest.TestCase):
     def test_partial_context(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             (Path(tmp) / "PRE_VIBE_SPEC.md").touch()
-            # missing FIRST_PROMPT.md and AGENTS.md
+            # missing FIRST_PROMPT.md and CLAUDE.md
             ctx = detect_existing_context(Path(tmp))
             self.assertTrue(ctx.has_partial_pre_vibe_docs)
             self.assertEqual(ctx.recommended_action, "complete_missing_context")
@@ -449,17 +449,10 @@ class ArtifactValidationTests(unittest.TestCase):
                 allow_project_index=False,
             )
 
-    def test_rejects_init_agents_reference(self) -> None:
-        with self.assertRaises(ValueError):
-            validate_artifact_contents(
-                {"spec": "# S", "agents": "# INIT_AGENTS.md was here", "prompt": "# P"},
-                allow_project_index=False,
-            )
-
     def test_rejects_cross_references(self) -> None:
         with self.assertRaises(ValueError):
             validate_artifact_contents(
-                {"spec": "See AGENTS.md for details", "agents": "# A", "prompt": "# P"},
+                {"spec": "See CLAUDE.md for details", "agents": "# A", "prompt": "# P"},
                 allow_project_index=False,
             )
 
@@ -514,7 +507,7 @@ class ArtifactWriteTests(unittest.TestCase):
             )
             self.assertIn("spec", result["written"])
             self.assertTrue((Path(tmp) / "PRE_VIBE_SPEC.md").exists())
-            self.assertTrue((Path(tmp) / "AGENTS.md").exists())
+            self.assertTrue((Path(tmp) / "CLAUDE.md").exists())
             self.assertTrue((Path(tmp) / "FIRST_PROMPT.md").exists())
 
     def test_write_artifacts_rejects_status_param(self) -> None:

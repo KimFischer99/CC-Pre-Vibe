@@ -128,16 +128,16 @@ def document_output_plan_for(
 ) -> tuple[dict[str, str], str]:
     has_root_agents = bool(project_context and project_context.project_agents_path)
     if not has_root_agents and project_context is None and project_root is not None:
-        has_root_agents = (project_root / "AGENTS.md").exists()
+        has_root_agents = (project_root / "CLAUDE.md").exists()
     plan = {
         "spec": "PRE_VIBE_SPEC.md",
         "prompt": "FIRST_PROMPT.md",
     }
     if has_root_agents:
-        plan["project_agents"] = "PROJECT_AGENTS.md"
+        plan["project_agents"] = "PROJECT_CLAUDE.md"
         mode = "proposal"
     else:
-        plan["agents"] = "AGENTS.md"
+        plan["agents"] = "CLAUDE.md"
         mode = "create"
     if intensity == "architect":
         plan["project_index"] = "PROJECT_INDEX.md"
@@ -422,11 +422,11 @@ def artifact_rules_for(language: str) -> list[str]:
             "三份 Markdown 必须围绕用户任务和项目证据定制写作。",
             "最终产物不得出现 pre-vibe、插件实现、MCP server 或 workflow 内部表述，除非用户任务本身就是开发该工具。",
             "PRE_VIBE_SPEC.md 面向初级用户，是项目 handbook；必须包含 Project Language 和 Evidence。",
-            "AGENTS.md 或 PROJECT_AGENTS.md 面向 Claude Code；只保留执行规则、约束、文件指针、验收标准和必要操作边界。",
-            "AGENTS.md / PROJECT_AGENTS.md 必须参考全局 AGENTS.md；不得加入与全局指令冲突或削弱全局指令的规则。",
+            "CLAUDE.md 或 PROJECT_CLAUDE.md 面向 Claude Code；只保留执行规则、约束、文件指针、验收标准和必要操作边界。",
+            "CLAUDE.md / PROJECT_CLAUDE.md 必须参考全局 CLAUDE.md；不得加入与全局指令冲突或削弱全局指令的规则。",
             "FIRST_PROMPT.md 必须是 execution contract，包含 Completion Contract、停止询问条件和验证要求。",
             "architect 档可额外生成 PROJECT_INDEX.md；FIRST_PROMPT.md 可以引用 PROJECT_INDEX.md。",
-            "PRE_VIBE_SPEC.md、AGENTS.md/PROJECT_AGENTS.md、PROJECT_INDEX.md 必须彼此独立；任一文件不得出现另一文件的文件名或路径。",
+            "PRE_VIBE_SPEC.md、CLAUDE.md/PROJECT_CLAUDE.md、PROJECT_INDEX.md 必须彼此独立；任一文件不得出现另一文件的文件名或路径。",
             "问题必须通过 Claude Code 原生提问/审批 UI 展示；不得把阻塞问题直接写在普通聊天消息中。",
             "每个阻塞问题必须包含推荐答案；能从项目文件推断的信息不得重复询问用户。",
             "信息不足时先询问或补上下文，不得用模板语言填空。",
@@ -435,11 +435,11 @@ def artifact_rules_for(language: str) -> list[str]:
         "All three Markdown files must be custom-written from the user's task and project evidence.",
         "Final artifacts must not mention pre-vibe, plugin implementation, MCP server, or workflow internals unless the user is building this tool.",
         "PRE_VIBE_SPEC.md is a beginner-friendly handbook and must include Project Language and Evidence sections.",
-        "AGENTS.md or PROJECT_AGENTS.md is agent-facing and should contain only execution rules, constraints, file pointers, acceptance criteria, and necessary operation boundaries.",
-        "AGENTS.md / PROJECT_AGENTS.md must account for global AGENTS.md and must not conflict with or weaken global instructions.",
+        "CLAUDE.md or PROJECT_CLAUDE.md is agent-facing and should contain only execution rules, constraints, file pointers, acceptance criteria, and necessary operation boundaries.",
+        "CLAUDE.md / PROJECT_CLAUDE.md must account for global CLAUDE.md and must not conflict with or weaken global instructions.",
         "FIRST_PROMPT.md must be an execution contract with Completion Contract, stop/ask conditions, and verification requirements.",
         "Architect effort may also produce PROJECT_INDEX.md; FIRST_PROMPT.md may reference PROJECT_INDEX.md.",
-        "PRE_VIBE_SPEC.md, AGENTS.md/PROJECT_AGENTS.md, and PROJECT_INDEX.md must be standalone; none may mention another filename or path.",
+        "PRE_VIBE_SPEC.md, CLAUDE.md/PROJECT_CLAUDE.md, and PROJECT_INDEX.md must be standalone; none may mention another filename or path.",
         "Blocking questions must be shown through Claude Code's native question/approval UI, not as ordinary chat text.",
         "Every blocking question must include a recommended answer; do not ask for facts already inferable from project files.",
         "When context is missing, ask or acquire context; never fill gaps with template language.",
@@ -531,7 +531,7 @@ def route_intake(
                 project_context.root,
                 f"Scanned {len(project_context.scanned_files)} allowlisted files and {len(project_context.key_dirs)} top-level directories.",
                 "high",
-                ["PRE_VIBE_SPEC.md", "AGENTS.md", "FIRST_PROMPT.md"],
+                ["PRE_VIBE_SPEC.md", "CLAUDE.md", "FIRST_PROMPT.md"],
             )
         )
         evidence_ids.add("project_execution_index")
@@ -542,7 +542,7 @@ def route_intake(
                 codex_environment.codex_home or "Claude Code home",
                 f"Indexed {len(codex_environment.installed_plugins)} plugins and {len(codex_environment.installed_skills)} standalone skills.",
                 "high",
-                ["AGENTS.md", "FIRST_PROMPT.md"],
+                ["CLAUDE.md", "FIRST_PROMPT.md"],
             )
         )
     output_plan, agent_guidance_mode = document_output_plan_for(project_context, selected_intensity, project_root)

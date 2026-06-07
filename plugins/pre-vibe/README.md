@@ -1,6 +1,6 @@
 # Pre-Vibe Plugin Package
 
-This directory is the distributable Claude Code plugin package for Pre-Vibe v0.1.1.
+This directory is the distributable Claude Code plugin package for Pre-Vibe v0.1.2.
 
 Pre-Vibe is backed by a local stdio MCP server and plugin-scoped workflow guidance. Users enable it from the Claude Code plugin picker, then start with a rough task or starter prompt.
 
@@ -25,7 +25,7 @@ Tool results use short user-visible status text such as "正在构建项目初�
 ## Documents Written
 
 - `PRE_VIBE_SPEC.md`
-- `AGENTS.md` or `PROJECT_AGENTS.md`
+- `CLAUDE.md` or `PROJECT_CLAUDE.md`
 - `FIRST_PROMPT.md`
 - `PROJECT_INDEX.md` for architect effort
 

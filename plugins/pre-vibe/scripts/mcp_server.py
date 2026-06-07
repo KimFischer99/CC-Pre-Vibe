@@ -28,7 +28,7 @@ SERVER_INSTRUCTIONS = (
     "Pre-Vibe prepares project starting context before implementation. "
     "Show only short user-facing status text in chat; keep structured workflow fields in structuredContent. "
     "Use native MCP elicitation for blocking questions instead of printing them as ordinary chat. "
-    "Write PRE_VIBE_SPEC.md, AGENTS.md or PROJECT_AGENTS.md, and FIRST_PROMPT.md; architect effort may also write PROJECT_INDEX.md. "
+    "Write PRE_VIBE_SPEC.md, CLAUDE.md or PROJECT_CLAUDE.md, and FIRST_PROMPT.md; architect effort may also write PROJECT_INDEX.md. "
     "Do not write internal intake/status/context fields to disk, and keep output paths inside the active project. "
     "Writing documents is not the end of the workflow: after write_project_starting_documents, request user approval for FIRST_PROMPT.md, then read and inject FIRST_PROMPT.md as the execution contract when approved."
 )
@@ -362,7 +362,7 @@ def handle(request: dict[str, Any]) -> dict[str, Any] | None:
             "result": {
                 "protocolVersion": "2024-11-05",
                 "capabilities": {"tools": {}},
-                "serverInfo": {"name": "pre-vibe", "version": "0.1.1"},
+                "serverInfo": {"name": "pre-vibe", "version": "0.1.2"},
                 "instructions": SERVER_INSTRUCTIONS,
             },
         }

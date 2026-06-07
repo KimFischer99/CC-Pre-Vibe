@@ -81,7 +81,7 @@ def inspect_codex_environment() -> CodexEnvironment:
     ]
     notes = []
     if not global_agents:
-        notes.append("No global AGENTS.md was found.")
+        notes.append("No global CLAUDE.md was found.")
     if not marketplace_has_pre_vibe:
         notes.append("pre-vibe is not listed in the default personal marketplace.")
     return CodexEnvironment(

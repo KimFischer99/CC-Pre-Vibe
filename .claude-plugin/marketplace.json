@@ -10,7 +10,7 @@
       "name": "pre-vibe",
       "source": "./plugins/pre-vibe",
       "description": "Turn rough first-session requests into project-specific starting context, handbook guidance, and a compact first prompt.",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "author": {
         "name": "Kim Fischer"
       },

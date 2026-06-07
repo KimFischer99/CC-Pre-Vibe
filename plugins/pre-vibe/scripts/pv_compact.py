@@ -29,10 +29,10 @@ def compact_project_context(context: ProjectContext | None) -> dict[str, Any] | 
     root = context.root
     payload["root"] = "."
     payload["global_agents_path"] = (
-        "global AGENTS.md" if context.global_agents_path else None
+        "global CLAUDE.md" if context.global_agents_path else None
     )
     payload["project_agents_path"] = (
-        "project AGENTS.md" if context.project_agents_path else None
+        "project CLAUDE.md" if context.project_agents_path else None
     )
     payload["do_not_touch"] = [
         redact_path_for_context(item, root) or item for item in context.do_not_touch

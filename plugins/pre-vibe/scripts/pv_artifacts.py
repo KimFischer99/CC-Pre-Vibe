@@ -12,8 +12,8 @@ from pv_models import AWAITING_APPROVAL
 
 ARTIFACT_FILENAMES = {
     "spec": "PRE_VIBE_SPEC.md",
-    "agents": "AGENTS.md",
-    "project_agents": "PROJECT_AGENTS.md",
+    "agents": "CLAUDE.md",
+    "project_agents": "PROJECT_CLAUDE.md",
     "prompt": "FIRST_PROMPT.md",
     "project_index": "PROJECT_INDEX.md",
 }
@@ -51,17 +51,11 @@ def validate_artifact_contents(contents: dict[str, str], allow_project_index: bo
         raise ValueError("contents must include agents or project_agents")
     if "project_index" in contents and not allow_project_index:
         raise ValueError("project_index is only allowed for architect effort")
-    for key, text in contents.items():
-        if key in {"spec", "agents", "project_agents", "prompt", "project_index"} and "INIT_AGENTS.md" in text:
-            raise ValueError("artifact content must not reference the retired INIT_AGENTS.md filename")
-    spec_text = contents.get("spec", "")
-    agent_text = contents.get("agents", "") + "\n" + contents.get("project_agents", "")
-    index_text = contents.get("project_index", "")
     forbidden_by_key = {
-        "spec": ("AGENTS.md", "PROJECT_AGENTS.md", "PROJECT_INDEX.md"),
+        "spec": ("CLAUDE.md", "PROJECT_CLAUDE.md", "PROJECT_INDEX.md"),
         "agents": ("PRE_VIBE_SPEC.md", "PROJECT_INDEX.md"),
         "project_agents": ("PRE_VIBE_SPEC.md", "PROJECT_INDEX.md"),
-        "project_index": ("PRE_VIBE_SPEC.md", "AGENTS.md", "PROJECT_AGENTS.md"),
+        "project_index": ("PRE_VIBE_SPEC.md", "CLAUDE.md", "PROJECT_CLAUDE.md"),
     }
     for key, filenames in forbidden_by_key.items():
         text = contents.get(key, "")

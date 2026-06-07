@@ -34,12 +34,11 @@ ALLOWLIST_FILENAMES = {
     "README.md",
     "README.zh.md",
     "README.en.md",
-    "AGENTS.md",
-    "PROJECT_AGENTS.md",
+    "CLAUDE.md",
+    "PROJECT_CLAUDE.md",
+    "AGENT.md",
     "FIRST_PROMPT.md",
     "PROJECT_INDEX.md",
-    "AGENT.md",
-    "CLAUDE.md",
     "package.json",
     "pnpm-lock.yaml",
     "package-lock.json",
@@ -98,8 +97,8 @@ def find_global_agents() -> Path | None:
     candidates: list[Path] = []
     claude_home = os.environ.get("CLAUDE_HOME")
     if claude_home:
-        candidates.append(Path(claude_home) / "AGENTS.md")
-    candidates.append(Path.home() / ".claude" / "AGENTS.md")
+        candidates.append(Path(claude_home) / "CLAUDE.md")
+    candidates.append(Path.home() / ".claude" / "CLAUDE.md")
     for path in candidates:
         if path.exists():
             return path
@@ -118,7 +117,7 @@ def detect_existing_context(root: Path) -> ExistingContext:
         "PRE_VIBE_SPEC.md",
         "FIRST_PROMPT.md",
     ]
-    agent_options = ["PROJECT_AGENTS.md", "AGENTS.md"]
+    agent_options = ["PROJECT_CLAUDE.md", "CLAUDE.md"]
     optional = ["AGENT.md", "PROJECT_INDEX.md"]
     existing = [name for name in required + agent_options + optional if (root / name).exists()]
     for entry in sorted(root.iterdir(), key=lambda path: path.name.lower()) if root.exists() else []:
@@ -128,13 +127,13 @@ def detect_existing_context(root: Path) -> ExistingContext:
         ):
             existing.append(entry.name)
     has_required_context = any((root / name).exists() for name in required)
-    has_project_agents_handoff = (root / "PROJECT_AGENTS.md").exists()
+    has_project_agents_handoff = (root / "PROJECT_CLAUDE.md").exists()
     has_agent_handoff = has_project_agents_handoff or (
-        has_required_context and (root / "AGENTS.md").exists()
+        has_required_context and (root / "CLAUDE.md").exists()
     )
     missing = [name for name in required if not (root / name).exists()]
     if not has_agent_handoff:
-        missing.append("AGENTS.md or PROJECT_AGENTS.md")
+        missing.append("CLAUDE.md or PROJECT_CLAUDE.md")
     required_count = len([name for name in required if name in existing])
     has_all = not missing
     has_partial = 0 < (required_count + int(has_agent_handoff)) < len(required) + 1
@@ -197,9 +196,7 @@ def detect_agent_instruction_map(root: Path, max_nested: int = 24) -> list[Agent
         refs.append(AgentInstructionRef(rel, scope, priority, kind))
 
     for name, kind, priority in (
-        ("AGENTS.md", "agents", "root"),
-        ("AGENT.md", "legacy_agents", "legacy"),
-        ("CLAUDE.md", "claude_memory", "tool_specific"),
+        ("CLAUDE.md", "claude_code", "root"),
         (".github/copilot-instructions.md", "copilot", "tool_specific"),
     ):
         path = root / name
@@ -210,7 +207,7 @@ def detect_agent_instruction_map(root: Path, max_nested: int = 24) -> list[Agent
     if cursor_rules.exists() and not is_secret_like(cursor_rules):
         add(cursor_rules, "cursor_rules", "tool_specific")
 
-    for path in sorted(root.glob("*/AGENTS.md"), key=lambda p: str(p).lower()):
+    for path in sorted(root.glob("*/CLAUDE.md"), key=lambda p: str(p).lower()):
         if len(refs) >= max_nested:
             break
         if any(part in SKIP_DIRS for part in path.parts):
@@ -233,7 +230,7 @@ def safe_walk(
     pointers: list[str] = []
     do_not_touch: list[str] = []
     global_agents = find_global_agents()
-    project_agents = root / "AGENTS.md"
+    project_agents = root / "CLAUDE.md"
     existing_context = detect_existing_context(root)
     agent_map = detect_agent_instruction_map(root)
     git_state = detect_git_state(root)
@@ -300,12 +297,9 @@ def safe_walk(
             elif entry.name == "pyproject.toml":
                 signals["stack"] = "Python"
                 pointers.append("pyproject.toml - Python package metadata")
-            elif entry.name == "AGENTS.md":
-                signals["agents_guidance"] = "project AGENTS.md present"
-                pointers.append("AGENTS.md - project agent guidance")
             elif entry.name == "CLAUDE.md":
-                signals["claude_memory"] = "CLAUDE.md present"
-                pointers.append("CLAUDE.md - Claude Code memory")
+                signals["claude_guidance"] = "project CLAUDE.md present"
+                pointers.append("CLAUDE.md - Claude Code project guidance")
             elif entry.name.lower().startswith("readme"):
                 pointers.append(f"{entry.name} - project overview")
             elif "prd" in entry.name.lower() or "spec" in entry.name.lower():

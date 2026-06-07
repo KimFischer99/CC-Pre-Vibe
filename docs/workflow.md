@@ -27,11 +27,11 @@ Blocking questions must use Claude Code native question UI through `open_questio
 
 ## Document Independence
 
-`PRE_VIBE_SPEC.md`, `AGENTS.md` or `PROJECT_AGENTS.md`, and `PROJECT_INDEX.md` must be standalone. `FIRST_PROMPT.md` may reference whichever files Claude Code needs for the handoff.
+`PRE_VIBE_SPEC.md`, `CLAUDE.md` or `PROJECT_CLAUDE.md`, and `PROJECT_INDEX.md` must be standalone. `FIRST_PROMPT.md` may reference whichever files Claude Code needs for the handoff.
 
 ## Safety Boundaries
 
 - Keep writes inside the active project root.
 - Do not write internal intake/status/context payloads to disk.
-- Do not silently overwrite an existing root `AGENTS.md`; write `PROJECT_AGENTS.md` instead.
+- Do not silently overwrite an existing root `CLAUDE.md`; write `PROJECT_CLAUDE.md` instead.
 - Redact secret-like values before writing generated artifacts.

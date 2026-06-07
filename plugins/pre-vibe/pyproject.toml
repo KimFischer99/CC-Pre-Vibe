@@ -1,6 +1,6 @@
 [project]
 name = "pre-vibe"
-version = "0.1.1"
+version = "0.1.2"
 description = "Claude Code plugin that turns rough first-session requests into project-specific starting context"
 requires-python = ">=3.11"
 license = { text = "MIT" }
