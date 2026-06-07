@@ -14,21 +14,29 @@ Pre-Vibe 把你的粗略需求整理成 **三份结构化文档**，让 Claude C
 在 Claude Code 中直接说：
 
 ```
-请帮我安装这个 plugin：git clone https://github.com/KimFischer99/CC-Pre-Vibe.git ~/.claude/plugins/marketplaces/pre-vibe && claude plugin install pre-vibe@pre-vibe
+帮我添加 Pre-Vibe 的 marketplace 到 settings.json 并安装插件：github:KimFischer99/CC-Pre-Vibe
 ```
 
-或手动两步安装：
+或手动操作——在 `~/.claude/settings.json` 中添加：
+
+```json
+"extraKnownMarketplaces": {
+  "pre-vibe": {
+    "source": {
+      "source": "github",
+      "repo": "KimFischer99/CC-Pre-Vibe"
+    }
+  }
+}
+```
+
+然后安装：
 
 ```bash
-# 第一步：克隆仓库作为目录 marketplace（只需一次）
-git clone https://github.com/KimFischer99/CC-Pre-Vibe.git ~/.claude/plugins/marketplaces/pre-vibe
-
-# 第二步：安装插件
 claude plugin install pre-vibe@pre-vibe
-
-# 第三步（可选）：以后更新用
-cd ~/.claude/plugins/marketplaces/pre-vibe && git pull
 ```
+
+使用 GitHub source 类型，Claude Code 会自动处理克隆、缓存和更新，无需手动 `git clone` 或 `git pull`。
 
 安装完成后重启 Claude Code，输入 `/pre-vibe`，然后描述你的任务即可。
 
